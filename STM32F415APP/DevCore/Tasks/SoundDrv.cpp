@@ -19,6 +19,7 @@
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "SoundDrv.h"
+#include "Rtos.h"
 
 // *****************************************************************************
 // ***   Get Instance   ********************************************************
@@ -39,27 +40,29 @@ void SoundDrv::InitTask(TIM_HandleTypeDef* htm)
   // Save timer handle
   htim = htm;
   // Create task
-  CreateTask("SoundDrv", SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY);
+  CreateTask();
 }
 
 // *****************************************************************************
 // ***   Sound Driver Setup   **************************************************
 // *****************************************************************************
-void SoundDrv::Setup(void* pvParameters)
+Result SoundDrv::Setup()
 {
-  // Init time variable
-  last_wake_time = xTaskGetTickCount();
+  // Init ticks variable
+  last_wake_ticks = RtosTick::GetTickCount();
+  // Always ok
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************
 // ***   Sound Driver Loop   ***************************************************
 // *****************************************************************************
-bool SoundDrv::Loop(void* pvParameters)
+Result SoundDrv::Loop()
 {
   // Flag
   bool is_playing = false;
   // Take mutex before start playing sound
-  xSemaphoreTake(melody_mutex, portMAX_DELAY);
+  melody_mutex.Lock();
   // Delay for playing one frequency
   uint32_t current_delay_ms = delay_ms;
   // If no current melody or melody size is zero - skip playing
@@ -100,21 +103,21 @@ bool SoundDrv::Loop(void* pvParameters)
     }
   }
   // Give mutex after start playing sound
-  xSemaphoreGive(melody_mutex);
+  melody_mutex.Release();
 
   // Pause until next tick
-  vTaskDelayUntil(&last_wake_time, current_delay_ms);
+  RtosTick::DelayUntilMs(last_wake_ticks, current_delay_ms);
 
   // Using semaphore here helps block this task while task wait request for
   // sound playing.
   if(is_playing == false)
   {
     // Wait semaphore for start play melody
-    xSemaphoreTake(sound_update, portMAX_DELAY);
+    sound_update.Take();
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************
@@ -123,21 +126,21 @@ bool SoundDrv::Loop(void* pvParameters)
 void SoundDrv::Beep(uint16_t freq, uint16_t del, bool pause_after_play)
 {
   // Take mutex before beeping - prevent play melody during beeping.
-  xSemaphoreTake(melody_mutex, portMAX_DELAY);
+  melody_mutex.Lock();
   // Start play tone
   Tone(freq);
   // Delay
-  vTaskDelay(del);
+  RtosTick::DelayMs(del);
   // Stop play tone
   Tone(0);
   // If flag is set
   if(pause_after_play == true)
   {
     // Delay with same value as played sound
-    vTaskDelay(del);
+    RtosTick::DelayMs(del);
   }
   // Give mutex after beeping
-  xSemaphoreGive(melody_mutex);
+  melody_mutex.Release();
 }
 
 // *****************************************************************************
@@ -159,7 +162,7 @@ void SoundDrv::PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms
     }
 
     // Take mutex before start playing melody
-    xSemaphoreTake(melody_mutex, portMAX_DELAY);
+    melody_mutex.Lock();
     // Set repeat flag for melody
     repeat = rep;
     // Set time for one frequency
@@ -171,10 +174,10 @@ void SoundDrv::PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms
     // Set melody pointer
     sound_table = melody;
     // Give mutex after start playing melody
-    xSemaphoreGive(melody_mutex);
+    melody_mutex.Release();
     
     // Give semaphore for start play melody
-    xSemaphoreGive(sound_update);
+    sound_update.Give();
   }
 }
 
@@ -184,7 +187,7 @@ void SoundDrv::PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms
 void SoundDrv::StopSound(void)
 {
   // Take mutex before stop playing sound
-  xSemaphoreTake(melody_mutex, portMAX_DELAY);
+  melody_mutex.Lock();
   // Clear sound table pointer
   sound_table = nullptr;
   // Clear sound table size
@@ -198,7 +201,7 @@ void SoundDrv::StopSound(void)
   // Stop sound
   Tone(0);
   // Give mutex after stop playing sound
-  xSemaphoreGive(melody_mutex);
+  melody_mutex.Release();
 }
 
 // *****************************************************************************

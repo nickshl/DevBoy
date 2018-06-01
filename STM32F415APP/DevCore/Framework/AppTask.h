@@ -52,14 +52,30 @@
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "semphr.h"
 
 // *****************************************************************************
-// * AppTask class. This class is wrapper for call C++ function from class.
+// * AppTask class. This class is wrapper for call C++ function from class. ****
 // *****************************************************************************
 class AppTask
 {
   public:
+    // *************************************************************************
+    // ***   Init Task   *******************************************************
+    // *************************************************************************
+    virtual void InitTask(void) {CreateTask();}
+
+  protected:
+    // *************************************************************************
+    // ***   Constructor   *****************************************************
+    // *************************************************************************
+    AppTask(uint16_t stk_size, uint8_t task_prio, const char name[],
+            uint16_t queue_len = 0U, uint16_t queue_msg_size = 0U,
+            void* task_msg_p = nullptr, uint32_t task_interval_ms = 0U) :
+      ctrl_queue((queue_len + 2U), sizeof(CtrlQueueMsg)),
+      task_queue(queue_len, queue_msg_size), task_msg_ptr(task_msg_p),
+      timer(task_interval_ms, RtosTimer::REPEATING, TimerCallback, (void*)this),
+      stack_size(stk_size), task_priority(task_prio), task_name(name) {};
+
     // *************************************************************************
     // ***   Virtual destructor - prevent warning   ****************************
     // *************************************************************************
@@ -68,27 +84,102 @@ class AppTask
     // *************************************************************************
     // ***   Create task function   ********************************************
     // *************************************************************************
-    // * This function creates new task in FreeRTOS, provide extern C 
-    // * TaskFunWrapper() function and pointer to class as parameter. When 
-    // * TaskFunWrapper() called from FreeRTOS, it use pointer to class from
-    // * parameter to call virtual Task() function.
-    void CreateTask(const char * const pcName,
-                    const uint16_t usStackDepth,
-                    UBaseType_t uxPriority);
+    // * This function creates new task in FreeRTOS, provide pointer to function
+    // * and pointer to class as parameter. When TaskFunctionCallback() called
+    // * from FreeRTOS, it use pointer to class from parameter to call virtual
+    // * functions.
+    void CreateTask();
 
     // *************************************************************************
     // ***   Setup function   **************************************************
     // *************************************************************************
-    // * Empty function by default - some tasks may not have Setup() actions
-    virtual void Setup(void *pvParameters) {};
+    // * * virtual function - some tasks may not have Setup() actions
+    virtual Result Setup() {return Result::RESULT_OK;}
+
+    // *************************************************************************
+    // ***   IntervalTimerExpired function   ***********************************
+    // *************************************************************************
+    // * Empty virtual function - some tasks may not have TimerExpired() actions
+    virtual Result TimerExpired() {return Result::RESULT_OK;}
+
+    // *************************************************************************
+    // ***   ProcessMessage function   *****************************************
+    // *************************************************************************
+    // * Empty virtual function - some tasks may not have ProcessMessage() actions
+    virtual Result ProcessMessage() {return Result::RESULT_OK;}
 
     // *************************************************************************
     // ***   Loop function   ***************************************************
     // *************************************************************************
-    // * Pure virtual Loop() function - each derived class must implement it
-    virtual bool Loop(void *pvParameters) = 0;
+    // * Empty virtual function - some tasks may not have Loop() actions
+    virtual Result Loop() {return Result::RESULT_OK;}
+
+    // *************************************************************************
+    // ***   SendTaskMessage function   ****************************************
+    // *************************************************************************
+    Result SendTaskMessage(const void* task_msg, bool is_priority = false);
 
   private:
+    // Task control queue message types
+    enum CtrlQueueMsgType
+    {
+       CTRL_TIMER_MSG,
+       CTRL_TASK_QUEUE_MSG
+    };
+    // Task control queue message struct
+    struct CtrlQueueMsg
+    {
+      CtrlQueueMsgType type;
+    };
+    // Task control queue
+    RtosQueue ctrl_queue;
+
+    // Task queue
+    RtosQueue task_queue;
+    // Pointer to receive message buffer
+    void* task_msg_ptr;
+
+    // Timer object
+    RtosTimer timer;
+
+    // Task stack size
+    uint16_t stack_size;
+    // Task priority
+    uint8_t task_priority;
+    // Pointer to the task name
+    const char* task_name;
+
+    // *************************************************************************
+    // ***   IntLoop function   ************************************************
+    // *************************************************************************
+    Result IntLoop();
+
+    // *************************************************************************
+    // ***   TaskFunctionCallback   ********************************************
+    // *************************************************************************
+    static void TaskFunctionCallback(void* ptr);
+
+    // *************************************************************************
+    // ***   IntervalTimerCallback function   **********************************
+    // *************************************************************************
+    static void TimerCallback(void* ptr);
+
+    // *************************************************************************
+    // ***   SendControlMessage function   *************************************
+    // *************************************************************************
+    Result SendControlMessage(const CtrlQueueMsg& ctrl_msg, bool is_priority = false);
+
+    // *************************************************************************
+    // ***   Change counter   **************************************************
+    // *************************************************************************
+    static void ChangeCnt(bool is_up);
+
+    // *************************************************************************
+    // ***   Private constructor and assign operator - prevent copying   *******
+    // *************************************************************************
+    AppTask();
+    AppTask(const AppTask&);
+    AppTask& operator=(const AppTask&);
 };
 
 #endif

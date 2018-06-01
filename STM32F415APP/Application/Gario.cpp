@@ -8,6 +8,10 @@
 // *****************************************************************************
 #include "Gario.h"
 
+// *****************************************************************************
+// ***   Static Data Initialization   ******************************************
+// *****************************************************************************
+
 uint8_t level_data[] =
  {
   0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,
@@ -1015,18 +1019,9 @@ Gario& Gario::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void Gario::InitTask(void)
-{
-  // Create task
-  CreateTask("Gario", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Gario Loop   **********************************************************
 // *****************************************************************************
-bool Gario::Loop(void* pvParameters)
+Result Gario::Loop()
 {
   // Process level data
   for(uint32_t i = 0; i < sizeof(level_data); i++)
@@ -1143,8 +1138,8 @@ bool Gario::Loop(void* pvParameters)
   // Movement variables
   int32_t dx = 0;
   int32_t dy = 0;
-  // Init time variable
-  uint32_t last_wake_time = xTaskGetTickCount();
+  // Init ticks variable
+  uint32_t last_wake_ticks = RtosTick::GetTickCount();
   //Alive flag
   bool alive = true;
   // Main cycle
@@ -1153,7 +1148,7 @@ bool Gario::Loop(void* pvParameters)
     // Update Display
     DisplayDrv::GetInstance().UpdateDisplay();
     // Pause until next tick
-    vTaskDelayUntil(&last_wake_time, TICK_MS);
+    RtosTick::DelayUntilMs(last_wake_ticks, TICK_MS);
     // Clear variables
     dx = 0;
     dy = 0;
@@ -1204,7 +1199,7 @@ bool Gario::Loop(void* pvParameters)
   sound_drv.StopSound();
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************

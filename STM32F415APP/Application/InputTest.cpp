@@ -30,15 +30,6 @@ InputTest& InputTest::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void InputTest::InitTask(void)
-{
-  // Create task
-  CreateTask("Input Test", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Test get function   ***************************************************
 // *****************************************************************************
 char* InputTest::GetMenuStr(void* ptr, char * buf, uint32_t n, uint32_t add_param)
@@ -51,7 +42,7 @@ char* InputTest::GetMenuStr(void* ptr, char * buf, uint32_t n, uint32_t add_para
 // *****************************************************************************
 // ***   Application Loop   ****************************************************
 // *****************************************************************************
-bool InputTest::Loop(void* pvParameters)
+Result InputTest::Loop()
 {
   char str_left[32] = {"\0"};
   String left_str(str_left, 30-2, 20 - 14, COLOR_MAGENTA, String::FONT_8x12);
@@ -132,7 +123,7 @@ bool InputTest::Loop(void* pvParameters)
 		// Update Display
 		display_drv.UpdateDisplay();
     // Pause
-    vTaskDelay(50U);
+		RtosTick::DelayTicks(50U);
 
     // Exit by touch
     if(display_drv.IsTouch() == true)
@@ -142,5 +133,5 @@ bool InputTest::Loop(void* pvParameters)
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }

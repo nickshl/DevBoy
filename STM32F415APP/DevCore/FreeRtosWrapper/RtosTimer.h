@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file SoundDrv.h
+//  @file RtosTimer.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Sound Driver Class, header
+//  @details DevCore: FreeRTOS Timer Wrapper Class, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,111 +45,100 @@
 //
 //******************************************************************************
 
-#ifndef SoundDrv_h
-#define SoundDrv_h
+#ifndef RtosTimer_h
+#define RtosTimer_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "AppTask.h"
-#include "RtosMutex.h"
-#include "RtosSemaphore.h"
+#include "Rtos.h"
+#include "timers.h"
 
 // *****************************************************************************
-// ***   Sound Driver Class. This class implement work with sound.   ***********
+// ***   RtosTimer   ***********************************************************
 // *****************************************************************************
-class SoundDrv : public AppTask
+class RtosTimer
 {
   public:
-    // *************************************************************************
-    // ***   Get Instance   ****************************************************
-    // *************************************************************************
-    // * This class is singleton. For use this class you must call GetInstance()
-    // * to receive reference to Sound Driver class
-    static SoundDrv& GetInstance(void);
+    // Definition of callback function
+    typedef void (Callback)(void* ptr);
+
+    // Types of timer
+    enum TimerType
+    {
+       REPEATING,
+       ONE_SHOT
+    };
 
     // *************************************************************************
-    // ***   Init Sound Driver Task   ******************************************
+    // ***   RtosTimer   *******************************************************
     // *************************************************************************
-    virtual void InitTask(TIM_HandleTypeDef *htm);
+    RtosTimer(uint32_t period_ms, TimerType type, Callback& clbk, void* clbk_param) :
+              timer_period_ms(period_ms), timer_type(type),
+              callback(&clbk), callback_param(clbk_param) {};
 
     // *************************************************************************
-    // ***   Sound Driver Setup   **********************************************
+    // ***   ~RtosTimer   ******************************************************
     // *************************************************************************
-    virtual Result Setup();
+    ~RtosTimer();
 
     // *************************************************************************
-    // ***   Sound Driver Loop   ***********************************************
+    // ***   Create   **********************************************************
     // *************************************************************************
-    virtual Result Loop();
+    Result Create();
 
     // *************************************************************************
-    // ***   Beep function   ***************************************************
+    // ***   IsActive   ********************************************************
     // *************************************************************************
-    void Beep(uint16_t freq, uint16_t del, bool pause_after_play = false);
+    bool IsActive() const;
 
     // *************************************************************************
-    // ***   Play sound function   *********************************************
+    // ***   Start   ***********************************************************
     // *************************************************************************
-    void PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms = 100U, bool rep = false);
+    Result Start(uint32_t timeout_ms = 0);
 
     // *************************************************************************
-    // ***   Stop sound function   *********************************************
+    // ***   Stop   ************************************************************
     // *************************************************************************
-    void StopSound(void);
+    Result Stop(uint32_t timeout_ms = 0);
 
     // *************************************************************************
-    // ***   Mute sound function   *********************************************
+    // ***   SetNewPeriod   ****************************************************
     // *************************************************************************
-    void Mute(bool mute_flag);
+    Result UpdatePeriod(uint32_t new_period_ms, uint32_t timeout_ms = 0);
 
     // *************************************************************************
-    // ***   Is sound played function   ****************************************
+    // ***   StartWithNewPeriod   **********************************************
     // *************************************************************************
-    bool IsSoundPlayed(void);
+    Result StartWithNewPeriod(uint32_t new_period_ms, uint32_t timeout_ms = 0);
+
+    // *************************************************************************
+    // ***   Reset   ***********************************************************
+    // *************************************************************************
+    Result Reset(uint32_t timeout_ms = 0);
+
+    // *************************************************************************
+    // ***   GetTimerPeriod   **************************************************
+    // *************************************************************************
+    inline uint32_t GetTimerPeriod(void) const {return timer_period_ms;}
 
   private:
     // Timer handle
-    TIM_HandleTypeDef* htim = SOUND_HTIM;
-    // Timer channel
-    uint32_t channel = SOUND_CHANNEL;
-    
-    // Ticks variable
-    uint32_t last_wake_ticks = 0U;
+    TimerHandle_t timer = nullptr;
 
-    // Pointer to table contains melody
-    const uint16_t* sound_table = nullptr;
-    // Size of table
-    uint16_t sound_table_size = 0U;
-    // Current position
-    uint16_t sound_table_position = 0U;
-    // Current frequency delay
-    uint16_t current_delay = 0U;
-    // Time for one frequency in ms
-    uint32_t delay_ms = 100U;
-    // Repeat flag
-    bool repeat = false;
+    // Timer period in ms
+    uint32_t timer_period_ms;
+    // Timer type
+    TimerType timer_type;
 
-    // Mute flag
-    bool mute = false;
+    // Pointer to the callback function
+    Callback* callback;
+    // Pointer to the callback data
+    void* callback_param = nullptr;
 
-    // Mutex to synchronize when playing melody frames
-    RtosMutex melody_mutex;
-
-    // Semaphore for start play sound
-    RtosSemaphore sound_update;
-
-    // *************************************************************************
-    // ***   Process Button Input function   ***********************************
-    // *************************************************************************
-    void Tone(uint16_t freq);
-
-    // *************************************************************************
-    // ** Private constructor. Only GetInstance() allow to access this class. **
-    // *************************************************************************
-    SoundDrv() : AppTask(SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY,
-                         "SoundDrv") {};
+    // Timer callback wrapper function
+    static void CallbackFunction(TimerHandle_t timer_handle);
 };
 
 #endif

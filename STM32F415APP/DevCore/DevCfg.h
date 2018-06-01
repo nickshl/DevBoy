@@ -51,10 +51,13 @@
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
-#include "FreeRTOS.h"
-#include "task.h"
+#include "Result.h"
+#include "Rtos.h"
+
+#include "adc.h"
 #include "spi.h"
 #include "tim.h"
+#include "usb_device.h"
 
 // *****************************************************************************
 // ***   Configuration   *******************************************************
@@ -70,22 +73,33 @@ static TIM_HandleTypeDef* const SOUND_HTIM = &htim4;
 // Sound Timer channel
 static const uint32_t SOUND_CHANNEL = TIM_CHANNEL_2;
 
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)256)
+// *** Applications tasks stack sizes   ****************************************
+const static uint16_t APPLICATION_TASK_STACK_SIZE = 1024U;
+const static uint16_t EXAMPLE_MSG_TASK_STACK_SIZE = configMINIMAL_STACK_SIZE;
+// *** Applications tasks priorities   *****************************************
+const static uint8_t APPLICATION_TASK_PRIORITY = tskIDLE_PRIORITY + 2U;
+const static uint8_t EXAMPLE_MSG_TASK_PRIORITY = tskIDLE_PRIORITY + 2U;
+// *****************************************************************************
 
-// *** Tasks stack sizes   *****************************************************
-const static uint16_t DISPLAY_DRV_TASK_STACK_SIZE = configMINIMAL_STACK_SIZE;
+// *** System tasks stack sizes   **********************************************
+const static uint16_t DISPLAY_DRV_TASK_STACK_SIZE = 256U;
 const static uint16_t INPUT_DRV_TASK_STACK_SIZE   = configMINIMAL_STACK_SIZE;
 const static uint16_t SOUND_DRV_TASK_STACK_SIZE   = configMINIMAL_STACK_SIZE;
-// *** Tasks priorities   ******************************************************
-const static uint32_t DISPLAY_DRV_TASK_PRIORITY = tskIDLE_PRIORITY + 1U;
-const static uint32_t INPUT_DRV_TASK_PRIORITY   = tskIDLE_PRIORITY + 3U;
-const static uint32_t SOUND_DRV_TASK_PRIORITY   = tskIDLE_PRIORITY + 4U;
+// *** System tasks priorities   ***********************************************
+const static uint8_t DISPLAY_DRV_TASK_PRIORITY = tskIDLE_PRIORITY + 1U;
+const static uint8_t INPUT_DRV_TASK_PRIORITY   = tskIDLE_PRIORITY + 2U;
+const static uint8_t SOUND_DRV_TASK_PRIORITY   = tskIDLE_PRIORITY + 3U;
 // *****************************************************************************
 
 // *****************************************************************************
 // ***   Macroses   ************************************************************
 // *****************************************************************************
+
+// Number of array elements
 #define NumberOf(x) (sizeof(x)/sizeof((x)[0]))
+
+// Break macro - useful for debugging
+#define Break() asm volatile("bkpt #0")
 
 // *****************************************************************************
 // ***   Overloaded operators   ************************************************

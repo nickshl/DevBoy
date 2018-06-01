@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file SoundDrv.h
+//  @file Rtos.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Sound Driver Class, header
+//  @details DevCore: FreeRTOS Wrapper, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,111 +45,80 @@
 //
 //******************************************************************************
 
-#ifndef SoundDrv_h
-#define SoundDrv_h
+#ifndef Rtos_h
+#define Rtos_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "DevCfg.h"
-#include "AppTask.h"
+#include "RtosTick.h"
+#include "RtosTimer.h"
+#include "RtosQueue.h"
 #include "RtosMutex.h"
 #include "RtosSemaphore.h"
 
 // *****************************************************************************
-// ***   Sound Driver Class. This class implement work with sound.   ***********
+// ***   Rtos   ****************************************************************
 // *****************************************************************************
-class SoundDrv : public AppTask
+class Rtos
 {
   public:
-    // *************************************************************************
-    // ***   Get Instance   ****************************************************
-    // *************************************************************************
-    // * This class is singleton. For use this class you must call GetInstance()
-    // * to receive reference to Sound Driver class
-    static SoundDrv& GetInstance(void);
+    // Definition of callback function
+    typedef void (TaskFunction)(void* ptr);
 
     // *************************************************************************
-    // ***   Init Sound Driver Task   ******************************************
+    // ***   TaskCreate   ******************************************************
     // *************************************************************************
-    virtual void InitTask(TIM_HandleTypeDef *htm);
+    static Result TaskCreate(TaskFunction& function, const char* task_name,
+                             const uint16_t stack_depth, void* param_ptr,
+                             uint8_t priority);
 
     // *************************************************************************
-    // ***   Sound Driver Setup   **********************************************
+    // ***   TaskDelete   ******************************************************
     // *************************************************************************
-    virtual Result Setup();
+    static void TaskDelete(TaskHandle_t task = nullptr);
 
     // *************************************************************************
-    // ***   Sound Driver Loop   ***********************************************
+    // ***   IsInHandlerMode   *************************************************
     // *************************************************************************
-    virtual Result Loop();
+    static bool IsInHandlerMode();
 
     // *************************************************************************
-    // ***   Beep function   ***************************************************
+    // ***   SuspendScheduler   ************************************************
     // *************************************************************************
-    void Beep(uint16_t freq, uint16_t del, bool pause_after_play = false);
+    static void SuspendScheduler();
 
     // *************************************************************************
-    // ***   Play sound function   *********************************************
+    // ***   ResumeScheduler   *************************************************
     // *************************************************************************
-    void PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms = 100U, bool rep = false);
+    static void ResumeScheduler();
 
     // *************************************************************************
-    // ***   Stop sound function   *********************************************
+    // ***   EnterCriticalSection   ********************************************
     // *************************************************************************
-    void StopSound(void);
+    static void EnterCriticalSection();
 
     // *************************************************************************
-    // ***   Mute sound function   *********************************************
+    // ***   ExitCriticalSection   *********************************************
     // *************************************************************************
-    void Mute(bool mute_flag);
-
-    // *************************************************************************
-    // ***   Is sound played function   ****************************************
-    // *************************************************************************
-    bool IsSoundPlayed(void);
-
-  private:
-    // Timer handle
-    TIM_HandleTypeDef* htim = SOUND_HTIM;
-    // Timer channel
-    uint32_t channel = SOUND_CHANNEL;
-    
-    // Ticks variable
-    uint32_t last_wake_ticks = 0U;
-
-    // Pointer to table contains melody
-    const uint16_t* sound_table = nullptr;
-    // Size of table
-    uint16_t sound_table_size = 0U;
-    // Current position
-    uint16_t sound_table_position = 0U;
-    // Current frequency delay
-    uint16_t current_delay = 0U;
-    // Time for one frequency in ms
-    uint32_t delay_ms = 100U;
-    // Repeat flag
-    bool repeat = false;
-
-    // Mute flag
-    bool mute = false;
-
-    // Mutex to synchronize when playing melody frames
-    RtosMutex melody_mutex;
-
-    // Semaphore for start play sound
-    RtosSemaphore sound_update;
+    static void ExitCriticalSection();
 
     // *************************************************************************
-    // ***   Process Button Input function   ***********************************
+    // ***   DisableInterrupts   ***********************************************
     // *************************************************************************
-    void Tone(uint16_t freq);
+    static void DisableInterrupts();
 
     // *************************************************************************
-    // ** Private constructor. Only GetInstance() allow to access this class. **
+    // ***   EnableInterrupts   ************************************************
     // *************************************************************************
-    SoundDrv() : AppTask(SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY,
-                         "SoundDrv") {};
+    static void EnableInterrupts();
+
+ private:
+    // None
 };
 
 #endif

@@ -30,15 +30,6 @@ Calc& Calc::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void Calc::InitTask(void)
-{
-  // Create task
-  CreateTask("Calc", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Test get function   ***************************************************
 void Calc::Callback(void* ptr, void* param_ptr, uint32_t param)
 {
@@ -132,7 +123,7 @@ void Calc::GenerateStr()
 // *****************************************************************************
 // ***   Application task   ****************************************************
 // *****************************************************************************
-bool Calc::Loop(void* pvParameters)
+Result Calc::Loop()
 {
   // Calculate buttons dimensions based on space
 	int32_t space = 10;
@@ -166,7 +157,7 @@ bool Calc::Loop(void* pvParameters)
 		// Update Display
 		display_drv.UpdateDisplay();
     // Pause
-    vTaskDelay(50U);
+		RtosTick::DelayTicks(50U);
 
     // Exit by press
     if(input_drv.GetEncoderButtonState(InputDrv::EXT_LEFT, InputDrv::ENC_BTN_ENT) == true)
@@ -184,5 +175,5 @@ bool Calc::Loop(void* pvParameters)
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }

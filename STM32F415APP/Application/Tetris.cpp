@@ -20,6 +20,10 @@
 // *****************************************************************************
 #include "Tetris.h"
 
+// *****************************************************************************
+// ***   Constants   ***********************************************************
+// *****************************************************************************
+
 const uint16_t music_data_table[]={
 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1,
 0x1881, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061,
@@ -92,18 +96,9 @@ Tetris& Tetris::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void Tetris::InitTask(void)
-{
-  // Create task
-  CreateTask("Tetris", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Application task   ****************************************************
 // *****************************************************************************
-bool Tetris::Loop(void* pvParameters)
+Result Tetris::Loop()
 {
   // Bucket object
   TetrisBucket bucket;
@@ -124,7 +119,7 @@ bool Tetris::Loop(void* pvParameters)
   sound_drv.PlaySound(music_data_table, NumberOf(music_data_table), 120U, true);
 
   // Initialize random seed
-  srand(xTaskGetTickCount());
+  srand(RtosTick::GetTickCount());
 
   // Show bucket, shape, next shape and score string on screen
   bucket.Show(1);
@@ -134,8 +129,8 @@ bool Tetris::Loop(void* pvParameters)
   String score_str(scr_str,display_drv.GetScreenW()/2, 16, COLOR_WHITE, String::FONT_8x12);
   score_str.Show(3);
 
-  // Init time variable
-  uint32_t last_wake_time = xTaskGetTickCount();
+  // Init ticks variable
+  uint32_t last_wake_ticks = RtosTick::GetTickCount();
 
   // Delay between frames
   int32_t delay;
@@ -167,7 +162,7 @@ bool Tetris::Loop(void* pvParameters)
       // Update Display
       display_drv.UpdateDisplay();
       // Pause until next tick
-      vTaskDelay(3000U);
+      RtosTick::DelayMs(3000U);
       // Exit from cycle
       break;
     }
@@ -272,13 +267,13 @@ bool Tetris::Loop(void* pvParameters)
       // Update Display
       display_drv.UpdateDisplay();
       // Pause until next tick
-      vTaskDelayUntil(&last_wake_time, delay);
+      RtosTick::DelayUntilMs(last_wake_ticks, delay);
     }
     bucket.RemoveFullLines();
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************

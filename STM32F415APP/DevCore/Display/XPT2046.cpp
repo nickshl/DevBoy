@@ -99,7 +99,7 @@ bool XPT2046::GetXY(int32_t& x, int32_t& y)
   // Return value
   bool ret = GetRawXY(x, y);
   // If touch present
-  if( ret )
+  if(ret)
   {
     // Calculate X
     x = ((x * COEF) / kx) + bx;

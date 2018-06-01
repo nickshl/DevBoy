@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file UiMsgBox.h
+//  @file RtosSemaphore.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: UI Message Box Class, header
+//  @details DevCore: FreeRTOS Semaphore Wrapper Class, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,84 +45,45 @@
 //
 //******************************************************************************
 
-#ifndef UiBox_h
-#define UiBox_h
+#ifndef RtosSemaphore_h
+#define RtosSemaphore_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "DisplayDrv.h"
-#include "InputDrv.h"
-#include "SoundDrv.h"
-#include "UiEngine.h"
+#include "Rtos.h"
+#include "semphr.h"
 
 // *****************************************************************************
-// ***   Menu Class   **********************************************************
+// ***   RtosSemaphore   *******************************************************
 // *****************************************************************************
-class UiMsgBox
+class RtosSemaphore
 {
   public:
     // *************************************************************************
-    // ***   Public: Constructor   *********************************************
+    // ***   Constructor   *****************************************************
     // *************************************************************************
-    UiMsgBox(const char* msg_in, const char* hdr_in,
-             String::FontType msg_fnt_in = String::FONTS_MAX,
-             String::FontType hdr_fnt_in = String::FONTS_MAX,
-             uint16_t center_x_in = DisplayDrv::GetInstance().GetScreenW()/2,
-             uint16_t center_y_in = DisplayDrv::GetInstance().GetScreenH()/2,
-             uint16_t width_in = 0, uint16_t color_in = 0);
+    RtosSemaphore();
 
     // *************************************************************************
-    // ***   Public: Destructor   **********************************************
+    // ***   Destructor   ******************************************************
     // *************************************************************************
-    ~UiMsgBox();
+    ~RtosSemaphore();
 
     // *************************************************************************
-    // ***   Public: Show MsgBox   *********************************************
+    // ***   Take   ************************************************************
     // *************************************************************************
-    void Show(uint32_t z = 0xFFFFFFF0);
+    Result Take(TickType_t ticks_to_wait = portMAX_DELAY);
 
     // *************************************************************************
-    // ***   Public: Hide MsgBox   *********************************************
+    // ***   Give   ************************************************************
     // *************************************************************************
-    void Hide(void);
-
-    // *************************************************************************
-    // ***   Public: Run MsgBox   **********************************************
-    // *************************************************************************
-    void Run(uint32_t delay);
+    Result Give();
 
   private:
-    // Max allowed menu items on the screen
-    static const uint32_t MAX_MSGBOX_LINES = 5U;
-
-    // Pointer to message
-    const char* msg;
-    // Message font
-    String::FontType msg_fnt;
-
-    // Pointer to header
-    const char* hdr;
-    // Header font
-    String::FontType hdr_fnt;
-
-    // Position of MsgBox
-    uint16_t center_x;
-    uint16_t center_y;
-    // Width of MsgBox
-    uint16_t width;
-    // Color of MsgBox
-    uint16_t color;
-
-    // Data
-    Box box[4];
-    uint16_t box_cnt = 0;
-    String string[MAX_MSGBOX_LINES + 1U];
-    uint16_t str_cnt = 0;
-
-    // Buffer for stings
-    char str_buf[128];
+    // Semaphore handle
+    SemaphoreHandle_t semaphore;
 };
 
-#endif // UiEngine_h
+#endif

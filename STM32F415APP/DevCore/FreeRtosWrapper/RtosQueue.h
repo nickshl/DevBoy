@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file SoundDrv.h
+//  @file RtosMutex.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Sound Driver Class, header
+//  @details DevCore: FreeRTOS Queue Wrapper Class, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,111 +45,113 @@
 //
 //******************************************************************************
 
-#ifndef SoundDrv_h
-#define SoundDrv_h
+#ifndef RtosQueue_h
+#define RtosQueue_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "AppTask.h"
-#include "RtosMutex.h"
-#include "RtosSemaphore.h"
+#include "Rtos.h"
+#include "queue.h"
 
-// *****************************************************************************
-// ***   Sound Driver Class. This class implement work with sound.   ***********
-// *****************************************************************************
-class SoundDrv : public AppTask
+// ******************************************************************************
+// ***   RtosQueue   ************************************************************
+// ******************************************************************************
+class RtosQueue
 {
   public:
-    // *************************************************************************
-    // ***   Get Instance   ****************************************************
-    // *************************************************************************
-    // * This class is singleton. For use this class you must call GetInstance()
-    // * to receive reference to Sound Driver class
-    static SoundDrv& GetInstance(void);
+    // Maximum queue name length
+    static const uint16_t MAX_QUEUE_NAME_LEN = 24U;
 
     // *************************************************************************
-    // ***   Init Sound Driver Task   ******************************************
+    // ***   RtosQueue   *******************************************************
     // *************************************************************************
-    virtual void InitTask(TIM_HandleTypeDef *htm);
+    RtosQueue(uint32_t q_len, uint32_t itm_size, const char* queue_name = nullptr);
 
     // *************************************************************************
-    // ***   Sound Driver Setup   **********************************************
+    // ***   ~RtosQueue   ******************************************************
     // *************************************************************************
-    virtual Result Setup();
+    ~RtosQueue();
 
     // *************************************************************************
-    // ***   Sound Driver Loop   ***********************************************
+    // ***   SetName   *********************************************************
     // *************************************************************************
-    virtual Result Loop();
+    void SetName(const char* name);
 
     // *************************************************************************
-    // ***   Beep function   ***************************************************
+    // ***   Create   **********************************************************
     // *************************************************************************
-    void Beep(uint16_t freq, uint16_t del, bool pause_after_play = false);
+    Result Create();
 
     // *************************************************************************
-    // ***   Play sound function   *********************************************
+    // ***   Reset   ***********************************************************
     // *************************************************************************
-    void PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms = 100U, bool rep = false);
+    Result Reset();
 
     // *************************************************************************
-    // ***   Stop sound function   *********************************************
+    // ***   IsEmpty   *********************************************************
     // *************************************************************************
-    void StopSound(void);
+    bool IsEmpty() const;
 
     // *************************************************************************
-    // ***   Mute sound function   *********************************************
+    // ***   IsFull   **********************************************************
     // *************************************************************************
-    void Mute(bool mute_flag);
+    bool IsFull() const;
 
     // *************************************************************************
-    // ***   Is sound played function   ****************************************
+    // ***   GetMessagesWaiting   **********************************************
     // *************************************************************************
-    bool IsSoundPlayed(void);
+    Result GetMessagesWaiting(uint32_t& msg_cnt) const;
+
+    // *************************************************************************
+    // ***   SendToBack   ******************************************************
+    // *************************************************************************
+    Result SendToBack(const void* item, uint32_t timeout_ms = 0U);
+
+    // *************************************************************************
+    // ***   SendToFront   *****************************************************
+    // *************************************************************************
+    Result SendToFront(const void* item, uint32_t timeout_ms = 0U);
+
+    // *************************************************************************
+    // ***   Receive   *********************************************************
+    // *************************************************************************
+    Result Receive(void* item, uint32_t timeout_ms);
+
+    // *************************************************************************
+    // ***   Peek   ************************************************************
+    // *************************************************************************
+    Result Peek(void* item, uint32_t timeout_ms) const;
+
+    // *************************************************************************
+    // ***   GetQueueLen   *****************************************************
+    // *************************************************************************
+    inline uint16_t GetQueueLen(void) const {return queue_len;}
+
+    // *************************************************************************
+    // ***   GetItemSize   *****************************************************
+    // *************************************************************************
+    inline uint16_t GetItemSize(void) const {return item_size;}
 
   private:
-    // Timer handle
-    TIM_HandleTypeDef* htim = SOUND_HTIM;
-    // Timer channel
-    uint32_t channel = SOUND_CHANNEL;
-    
-    // Ticks variable
-    uint32_t last_wake_ticks = 0U;
+    // Queue handle
+    QueueHandle_t queue;
 
-    // Pointer to table contains melody
-    const uint16_t* sound_table = nullptr;
-    // Size of table
-    uint16_t sound_table_size = 0U;
-    // Current position
-    uint16_t sound_table_position = 0U;
-    // Current frequency delay
-    uint16_t current_delay = 0U;
-    // Time for one frequency in ms
-    uint32_t delay_ms = 100U;
-    // Repeat flag
-    bool repeat = false;
+    // Number of items in the queue
+    uint16_t queue_len;
+     
+    // Size of item
+    uint16_t item_size;
 
-    // Mute flag
-    bool mute = false;
+    // Queue name
+    char queue_name[MAX_QUEUE_NAME_LEN];
 
-    // Mutex to synchronize when playing melody frames
-    RtosMutex melody_mutex;
-
-    // Semaphore for start play sound
-    RtosSemaphore sound_update;
-
-    // *************************************************************************
-    // ***   Process Button Input function   ***********************************
-    // *************************************************************************
-    void Tone(uint16_t freq);
-
-    // *************************************************************************
-    // ** Private constructor. Only GetInstance() allow to access this class. **
-    // *************************************************************************
-    SoundDrv() : AppTask(SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY,
-                         "SoundDrv") {};
+    // Prevent copying and assigning
+    RtosQueue();
+    RtosQueue(const RtosQueue&);
+    RtosQueue& operator=(const RtosQueue&);
 };
 
-#endif
+
+#endif // FREE_RTOS_QUEUE_H

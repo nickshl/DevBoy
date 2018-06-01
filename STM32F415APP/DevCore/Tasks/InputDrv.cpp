@@ -19,10 +19,7 @@
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "InputDrv.h"
-
-// *****************************************************************************
-// ***   Static Data Initialization   ******************************************
-// *****************************************************************************
+#include "Rtos.h"
 
 // *****************************************************************************
 // ***   Get Instance   ********************************************************
@@ -53,13 +50,13 @@ void InputDrv::InitTask(TIM_HandleTypeDef* htm, ADC_HandleTypeDef* had)
   ConfigADC(devices[EXT_LEFT], devices[EXT_RIGHT]);
 
   // Create task
-  CreateTask("InputDrv", INPUT_DRV_TASK_STACK_SIZE, INPUT_DRV_TASK_PRIORITY);
+  CreateTask();
 }
 
 // *****************************************************************************
 // ***   Input Driver Setup   **************************************************
 // *****************************************************************************
-void InputDrv::Setup(void* pvParameters)
+Result InputDrv::Setup()
 {
   // If has timer handle and at least one device is encoder
   if(   (htim != nullptr)
@@ -69,21 +66,23 @@ void InputDrv::Setup(void* pvParameters)
     // must initialize tasks stacks before runs interrupt.
     HAL_TIM_Base_Start_IT(htim);
   }
-  // Init time variable
-  last_wake_time = xTaskGetTickCount();
+  // Init ticks variable
+  last_wake_ticks = RtosTick::GetTickCount();
+  // Always Ok
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************
 // ***   Input Driver Loop   ***************************************************
 // *****************************************************************************
-bool InputDrv::Loop(void* pvParameters)
+Result InputDrv::Loop()
 {
   // Call interrupt handler
   ProcessInput();
   // Pause until next tick
-  vTaskDelayUntil(&last_wake_time, 1U);
+  RtosTick::DelayUntilMs(last_wake_ticks, 1U);
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************

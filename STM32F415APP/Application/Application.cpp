@@ -40,15 +40,6 @@ Application& Application::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void Application::InitTask(void)
-{
-  // Create task
-  CreateTask("Application", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Test get function   ***************************************************
 // *****************************************************************************
 char* Application::GetMenuStr(void* ptr, char* buf, uint32_t n, uint32_t add_param)
@@ -61,7 +52,7 @@ char* Application::GetMenuStr(void* ptr, char* buf, uint32_t n, uint32_t add_par
 // *****************************************************************************
 // ***   Application Loop   ****************************************************
 // *****************************************************************************
-bool Application::Loop(void* pvParameters)
+Result Application::Loop()
 {
   // Sound control on the touchscreen
   SoundControlBox snd_box(0, 0);
@@ -78,7 +69,8 @@ bool Application::Loop(void* pvParameters)
    {"Input test",      nullptr, &Application::GetMenuStr, this, 6},
    {"SD write test",   nullptr, &Application::GetMenuStr, this, 7},
    {"USB test",        nullptr, &Application::GetMenuStr, this, 8},
-   {"Touch calibrate", nullptr, &Application::GetMenuStr, this, 9}};
+   {"Servo test",      nullptr, &Application::GetMenuStr, this, 9},
+   {"Touch calibrate", nullptr, &Application::GetMenuStr, this, 10}};
 
   // Create menu object
   UiMenu menu("Main Menu", main_menu_items, NumberOf(main_menu_items));
@@ -93,32 +85,32 @@ bool Application::Loop(void* pvParameters)
       {
         // Tetris Application
         case 0:
-          Tetris::GetInstance().Loop(nullptr);
+          Tetris::GetInstance().Loop();
           break;
 
         // Pong Application
         case 1:
-          Pong::GetInstance().Loop(nullptr);
+          Pong::GetInstance().Loop();
           break;
 
         case 2:
           // Gario Application
-          Gario::GetInstance().Loop(nullptr);
+          Gario::GetInstance().Loop();
           break;
 
         // Calc Application
         case 3:
-          Calc::GetInstance().Loop(nullptr);
+          Calc::GetInstance().Loop();
           break;
 
         // GraphDemo Application
         case 4:
-          GraphDemo::GetInstance().Loop(nullptr);
+          GraphDemo::GetInstance().Loop();
           break;
 
         // InputTest Application
         case 5:
-        	InputTest::GetInstance().Loop(nullptr);
+        	InputTest::GetInstance().Loop();
           break;
 
         // SD write test
@@ -164,6 +156,7 @@ bool Application::Loop(void* pvParameters)
           break;
         }
 
+        // USB CDC test
         case 7:
         {
           uint8_t str[64];
@@ -176,14 +169,36 @@ bool Application::Loop(void* pvParameters)
             // Wait until transmission finished
             while((hUsbDeviceFS.pClassData != nullptr) && (((USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData)->TxState == 1))
             {
-              vTaskDelay(1U);
+              RtosTick::DelayTicks(1U);
             }
           }
           break;
         }
 
-        // Touchscreen Calibration
+        // Servo test
         case 8:
+        {
+          // Configure GPIO pin : PB12
+          GPIO_InitTypeDef GPIO_InitStruct;
+          GPIO_InitStruct.Pin = GPIO_PIN_12;
+          GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+          GPIO_InitStruct.Pull = GPIO_NOPULL;
+          GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+          HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+          for(uint32_t n = 0U; n < 100U; n++)
+          {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+            RtosTick::DelayTicks(1U);
+            for(volatile uint32_t i = 0U; i < 1000U; i++);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+            RtosTick::DelayTicks(18U);
+          }
+        }
+        break;
+
+        // Touchscreen Calibration
+        case 9:
           display_drv.TouchCalibrate();
           break;
          
@@ -194,7 +209,7 @@ bool Application::Loop(void* pvParameters)
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************

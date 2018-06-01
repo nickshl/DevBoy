@@ -30,18 +30,9 @@ DisplayDrv& DisplayDrv::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init Display Driver Task    *******************************************
-// *****************************************************************************
-void DisplayDrv::InitTask(void)
-{
-  // Create task
-  CreateTask("DisplayDrv", DISPLAY_DRV_TASK_STACK_SIZE, DISPLAY_DRV_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Display Driver Setup   ************************************************
 // *****************************************************************************
-void DisplayDrv::Setup(void *pvParameters)
+Result DisplayDrv::Setup()
 {
   // Init display driver
   tft.Init();
@@ -72,12 +63,15 @@ void DisplayDrv::Setup(void *pvParameters)
     // Max Z
     fps_str.Show(0xFFFFFFFFU);
   }
+
+  // Always ok
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************
 // ***   Display Driver Loop   *************************************************
 // *****************************************************************************
-bool DisplayDrv::Loop(void *pvParameters)
+Result DisplayDrv::Loop()
 {
   // Variable for find FPS
   uint32_t time_ms = HAL_GetTick();
@@ -85,7 +79,7 @@ bool DisplayDrv::Loop(void *pvParameters)
   // If semaphore doesn't exist or taken within 100 ms - draw screen
   // Time need for update touchscreen state every 100 ms even display not
   // updated
-  if((screen_update == nullptr) || (xSemaphoreTake(screen_update, 100U) == pdTRUE))
+  if(screen_update.Take(100U) == Result::RESULT_OK)
   {
     // Set window for all screen and pointer to first pixel
     LockDisplay();
@@ -97,7 +91,7 @@ bool DisplayDrv::Loop(void *pvParameters)
       // Clear half of buffer
       memset(scr_buf[i%2], 0x00, sizeof(scr_buf[0]));
       // Take semaphore before draw line
-      xSemaphoreTake(line_mutex, portMAX_DELAY);
+      line_mutex.Lock();
       // Set pointer to first element
       VisObject* p_obj = object_list;
       // Do for all objects
@@ -110,7 +104,7 @@ bool DisplayDrv::Loop(void *pvParameters)
         p_obj = p_obj->p_next;
       }
       // Give semaphore after changes
-      xSemaphoreGive(line_mutex);
+      line_mutex.Release();
       // Wait until previous transfer complete
       while(tft.IsTransferComplete() == false) taskYIELD();
       // Write stream to LCD
@@ -137,7 +131,7 @@ bool DisplayDrv::Loop(void *pvParameters)
   int32_t tmp_tx = tx;
   int32_t tmp_ty = ty;
   // Try to take mutex. 1 ms should be enough.
-  if(xSemaphoreTake(touchscreen_mutex, 1) == pdTRUE)
+  if(touchscreen_mutex.Lock(1U) == Result::RESULT_OK)
   {
     if(tft_hspi == touch_hspi)
     {
@@ -149,7 +143,7 @@ bool DisplayDrv::Loop(void *pvParameters)
       MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_2);
       // Give semaphore for drawing frame - we can enter in this "if" statement
       // only if mutex taken
-      xSemaphoreGive(touchscreen_mutex);
+      touchscreen_mutex.Release();
     }
   }
   // If touch state changed (move)
@@ -157,7 +151,7 @@ bool DisplayDrv::Loop(void *pvParameters)
   {
     // Go thru VisObject list and call Active() function for active object
     // Take semaphore before draw line
-    xSemaphoreTake(line_mutex, portMAX_DELAY);
+    line_mutex.Lock();
     // Set pointer to first element
     VisObject* p_obj = object_list_last;
     // If list not empty
@@ -202,14 +196,14 @@ bool DisplayDrv::Loop(void *pvParameters)
       }
     }
     // Give semaphore after changes
-    xSemaphoreGive(line_mutex);
+    line_mutex.Release();
   }
   // If touch state changed (touch & release)
   if(is_touch != tmp_is_touch)
   {
     // Go thru VisObject list and call Active() function for active object
     // Take semaphore before draw line
-    xSemaphoreTake(line_mutex, portMAX_DELAY);
+    line_mutex.Lock();
     // Set pointer to first element
     VisObject* p_obj = object_list_last;
     // If list not empty
@@ -237,7 +231,7 @@ bool DisplayDrv::Loop(void *pvParameters)
       }
     }
     // Give semaphore after changes
-    xSemaphoreGive(line_mutex);
+    line_mutex.Release();
   }
   // Save new touch state
   is_touch = tmp_is_touch;
@@ -248,24 +242,25 @@ bool DisplayDrv::Loop(void *pvParameters)
   if(DISPLAY_DEBUG_INFO)
   {
     if(is_touch) sprintf(str, "X: %4ld, Y: %4ld", tx, ty);
-    else sprintf(str, "FPS: %2lu.%1lu, time: %lu", fps_x10/10, fps_x10%10, xTaskGetTickCount()/1000UL);
+    else sprintf(str, "FPS: %2lu.%1lu, time: %lu", fps_x10/10, fps_x10%10, RtosTick::GetTimeMs()/1000UL);
     fps_str.SetString(str);
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************
 // ***   Add Visual Object to object list   ************************************
 // *****************************************************************************
-bool DisplayDrv::AddVisObjectToList(VisObject* obj, uint32_t z)
+Result DisplayDrv::AddVisObjectToList(VisObject* obj, uint32_t z)
 {
-  bool ret = false;
+  Result result = Result::ERR_NULL_PTR;
+
   if((obj != nullptr) && (obj->p_prev == nullptr) && (obj->p_next == nullptr) && (obj != object_list))
   {
     // Take semaphore before add to list
-    xSemaphoreTake(line_mutex, portMAX_DELAY);
+    line_mutex.Lock();
     // Set object Z
     obj->z = z;
     // Set prev pointer to nullptr
@@ -314,23 +309,25 @@ bool DisplayDrv::AddVisObjectToList(VisObject* obj, uint32_t z)
       obj->p_prev = p_last;
     }
     // Give semaphore after changes
-    xSemaphoreGive(line_mutex);
+    line_mutex.Release();
     // Set return status
-    ret = true;
+    result = Result::RESULT_OK;
   }
-  return ret;
+
+  return result;
 }
 
 // *****************************************************************************
 // ***   Delete Visual Object from object list   *******************************
 // *****************************************************************************
-bool DisplayDrv::DelVisObjectFromList(VisObject * obj)
+Result DisplayDrv::DelVisObjectFromList(VisObject* obj)
 {
-  bool ret = false;
+  Result result = Result::ERR_NULL_PTR;
+
   if((obj != nullptr) && ((obj->p_prev != nullptr) || (obj->p_next != nullptr) || (obj == object_list)) )
   {
     // Take semaphore before delete from list
-    xSemaphoreTake(line_mutex, portMAX_DELAY);
+    line_mutex.Lock();
     // Remove element from head
     if(obj == object_list)
     {
@@ -363,56 +360,67 @@ bool DisplayDrv::DelVisObjectFromList(VisObject * obj)
     obj->p_prev = nullptr;
     obj->p_next = nullptr;
     // Give semaphore after changes
-    xSemaphoreGive(line_mutex);
+    line_mutex.Release();
     // Set return status
-    ret = true;
+    result = Result::RESULT_OK;
   }
-  return ret;
+
+  return result;
 }
 
 // *****************************************************************************
 // ***   Lock display   ********************************************************
 // *****************************************************************************
-bool DisplayDrv::LockDisplay(uint32_t wait_ms)
+Result DisplayDrv::LockDisplay(uint32_t wait_ms)
 {
   // Take semaphore for protect draw frame
-  return (xSemaphoreTake(frame_mutex, wait_ms) == pdTRUE);
+  Result result = frame_mutex.Lock(wait_ms);
+  // Return result
+  return result;
 }
 
 // *****************************************************************************
 // ***   Unlock display   ******************************************************
 // *****************************************************************************
-void DisplayDrv::UnlockDisplay(void)
+Result DisplayDrv::UnlockDisplay(void)
 {
   // Give semaphore for drawing frame
-  xSemaphoreGive(frame_mutex);
+  Result result = frame_mutex.Release();
+  // Return result
+  return result;
 }
 
 // *****************************************************************************
 // ***   Lock display line   ***************************************************
 // *****************************************************************************
-bool DisplayDrv::LockDisplayLine(uint32_t wait_ms)
+Result DisplayDrv::LockDisplayLine(uint32_t wait_ms)
 {
-  // Take semaphore for protect draw frame
-  return (xSemaphoreTake(line_mutex, wait_ms) == pdTRUE);
+  // Take semaphore for protect draw line
+  Result result = line_mutex.Lock(wait_ms);
+  // Return result
+  return result;
 }
 
 // *****************************************************************************
 // ***   Unlock display line   *************************************************
 // *****************************************************************************
-void DisplayDrv::UnlockDisplayLine(void)
+Result DisplayDrv::UnlockDisplayLine(void)
 {
   // Give semaphore for drawing frame
-  xSemaphoreGive(line_mutex);
+  Result result = line_mutex.Release();
+  // Return result
+  return result;
 }
 
 // *****************************************************************************
 // ***   Update display   ******************************************************
 // *****************************************************************************
-void DisplayDrv::UpdateDisplay(void)
+Result DisplayDrv::UpdateDisplay(void)
 {
   // Give semaphore for update screen
-  if(screen_update != nullptr) xSemaphoreGive(screen_update);
+  Result result = screen_update.Give();
+  // Return result
+  return result;
 }
 
 // *****************************************************************************
@@ -451,7 +459,7 @@ bool DisplayDrv::GetTouchXY(int32_t& x, int32_t& y)
   bool result = false;
   
   // Try to take mutex. 1 ms should be enough.
-  if(xSemaphoreTake(touchscreen_mutex, 1) == pdTRUE)
+  if(touchscreen_mutex.Lock(1U) == Result::RESULT_OK)
   {
     // If display driver gets touch coordinates and touch still present
     if(is_touch && touch.IsTouch())
@@ -470,7 +478,7 @@ bool DisplayDrv::GetTouchXY(int32_t& x, int32_t& y)
     }
     // Give semaphore for drawing frame - we can enter in this "if" statement
     // only if mutex taken
-    xSemaphoreGive(touchscreen_mutex);
+    touchscreen_mutex.Release();
   }
   // Return result
   return result;
@@ -513,7 +521,7 @@ void DisplayDrv::TouchCalibrate()
     // Update Display
     UpdateDisplay();
     // Delay
-    vTaskDelay(100U);
+    RtosTick::DelayMs(100U);
   }
   // Wait unpress and measure coordinates continuously for averaging
   while(GetTouchXY(tx, ty))
@@ -523,7 +531,7 @@ void DisplayDrv::TouchCalibrate()
     // Update Display - for update touch coordinates
     UpdateDisplay();
     // Delay
-    vTaskDelay(100U);
+    RtosTick::DelayMs(100U);
   }
 
   // Move box to position
@@ -534,7 +542,7 @@ void DisplayDrv::TouchCalibrate()
     // Update Display
     UpdateDisplay();
     // Delay
-    vTaskDelay(100U);
+    RtosTick::DelayMs(100U);
   }
   // Wait unpress and measure coordinates continuously for averaging
   while(GetTouchXY(tx, ty))
@@ -544,7 +552,7 @@ void DisplayDrv::TouchCalibrate()
     // Update Display
     UpdateDisplay();
     // Delay
-    vTaskDelay(100U);
+    RtosTick::DelayMs(100U);
   }
 
   // Calc coefs

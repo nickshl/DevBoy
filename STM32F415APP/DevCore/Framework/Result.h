@@ -1,8 +1,8 @@
 //******************************************************************************
-//  @file SoundDrv.h
+//  @file Result.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Sound Driver Class, header
+//  @details DevCore: Result codes, header
 //
 //  @section LICENSE
 //
@@ -45,111 +45,165 @@
 //
 //******************************************************************************
 
-#ifndef SoundDrv_h
-#define SoundDrv_h
+#ifndef Result_h
+#define Result_h
 
 // *****************************************************************************
-// ***   Includes   ************************************************************
+// ***   Result   **************************************************************
 // *****************************************************************************
-#include "DevCfg.h"
-#include "AppTask.h"
-#include "RtosMutex.h"
-#include "RtosSemaphore.h"
-
-// *****************************************************************************
-// ***   Sound Driver Class. This class implement work with sound.   ***********
-// *****************************************************************************
-class SoundDrv : public AppTask
+class Result
 {
   public:
     // *************************************************************************
-    // ***   Get Instance   ****************************************************
+    // ***   Enum with all possible result codes   *****************************
     // *************************************************************************
-    // * This class is singleton. For use this class you must call GetInstance()
-    // * to receive reference to Sound Driver class
-    static SoundDrv& GetInstance(void);
+    enum ResultCode
+    {
+      // ***   No error   ******************************************************
+      RESULT_OK = 0,
+
+      // ***   Generic   *******************************************************
+      ERR_NULL_PTR,
+      ERR_BAD_PARAMETER,
+      ERR_INVALID_ITEM,
+
+      // ***   RTOS errors   ***************************************************
+      ERR_TASK_CREATE,
+      ERR_QUEUE_CREATE,
+      ERR_QUEUE_GENERAL,
+      ERR_QUEUE_EMPTY,
+      ERR_QUEUE_READ,
+      ERR_QUEUE_WRITE,
+      ERR_QUEUE_RESET,
+      ERR_TIMER_CREATE,
+      ERR_TIMER_START,
+      ERR_TIMER_UPDATE,
+      ERR_TIMER_STOP,
+      ERR_MUTEX_CREATE,
+      ERR_MUTEX_LOCK,
+      ERR_MUTEX_RELEASE,
+      ERR_SEMAPHORE_CREATE,
+      ERR_SEMAPHORE_TAKE,
+      ERR_SEMAPHORE_GIVE,
+
+      // ***   Elements count   ************************************************
+      RESULTS_CNT
+    };
 
     // *************************************************************************
-    // ***   Init Sound Driver Task   ******************************************
+    // ***   Result   **********************************************************
     // *************************************************************************
-    virtual void InitTask(TIM_HandleTypeDef *htm);
+    Result() {};
 
     // *************************************************************************
-    // ***   Sound Driver Setup   **********************************************
+    // ***   Result   **********************************************************
     // *************************************************************************
-    virtual Result Setup();
+    Result(ResultCode res)
+    {
+      result = res;
+    }
 
     // *************************************************************************
-    // ***   Sound Driver Loop   ***********************************************
+    // ***   IsGood   **********************************************************
     // *************************************************************************
-    virtual Result Loop();
+    bool IsGood() const
+    {
+      return result == RESULT_OK;
+    }
 
     // *************************************************************************
-    // ***   Beep function   ***************************************************
+    // ***   IsBad   ***********************************************************
     // *************************************************************************
-    void Beep(uint16_t freq, uint16_t del, bool pause_after_play = false);
+    bool IsBad() const
+    {
+      return result != RESULT_OK;
+    }
 
     // *************************************************************************
-    // ***   Play sound function   *********************************************
+    // ***   operator ResultCode   *********************************************
     // *************************************************************************
-    void PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms = 100U, bool rep = false);
+    operator ResultCode() const
+    {
+      return result;
+    }
 
     // *************************************************************************
-    // ***   Stop sound function   *********************************************
+    // ***   operator=   *******************************************************
     // *************************************************************************
-    void StopSound(void);
+    Result& operator=(ResultCode res)
+    {
+      result = res;
+      return *this;
+    }
 
     // *************************************************************************
-    // ***   Mute sound function   *********************************************
+    // ***   operator=   *******************************************************
     // *************************************************************************
-    void Mute(bool mute_flag);
+    Result& operator=(const Result& r_arg)
+    {
+      result = r_arg.result;
+      return *this;
+    }
 
     // *************************************************************************
-    // ***   Is sound played function   ****************************************
+    // ***   operator|=   ******************************************************
     // *************************************************************************
-    bool IsSoundPlayed(void);
+    Result& operator|=(ResultCode res)
+    {
+      if(result == RESULT_OK)
+      {
+        result = res;
+      }
+      return *this;
+    }
+
+    // *************************************************************************
+    // ***   operator|=   ******************************************************
+    // *************************************************************************
+    Result& operator|=(const Result& r_arg)
+    {
+      if(result == RESULT_OK)
+      {
+        result = r_arg.result;
+      }
+      return *this;
+    }
+
+    // *************************************************************************
+    // ***   operator==   ******************************************************
+    // *************************************************************************
+    bool operator==(ResultCode res) const
+    {
+       return(result == res);
+    }
+
+    // *************************************************************************
+    // ***   operator==   ******************************************************
+    // *************************************************************************
+    bool operator==(const Result& r_arg) const
+    {
+      return result == r_arg.result;
+    }
+
+    // *************************************************************************
+    // ***   operator!=   ******************************************************
+    // *************************************************************************
+    bool operator!=(ResultCode res) const
+    {
+      return(result != res);
+    }
+
+    // *************************************************************************
+    // ***   operator!=   ******************************************************
+    // *************************************************************************
+    bool operator!=(const Result& r_arg) const
+    {
+      return(result != r_arg.result);
+    }
 
   private:
-    // Timer handle
-    TIM_HandleTypeDef* htim = SOUND_HTIM;
-    // Timer channel
-    uint32_t channel = SOUND_CHANNEL;
-    
-    // Ticks variable
-    uint32_t last_wake_ticks = 0U;
-
-    // Pointer to table contains melody
-    const uint16_t* sound_table = nullptr;
-    // Size of table
-    uint16_t sound_table_size = 0U;
-    // Current position
-    uint16_t sound_table_position = 0U;
-    // Current frequency delay
-    uint16_t current_delay = 0U;
-    // Time for one frequency in ms
-    uint32_t delay_ms = 100U;
-    // Repeat flag
-    bool repeat = false;
-
-    // Mute flag
-    bool mute = false;
-
-    // Mutex to synchronize when playing melody frames
-    RtosMutex melody_mutex;
-
-    // Semaphore for start play sound
-    RtosSemaphore sound_update;
-
-    // *************************************************************************
-    // ***   Process Button Input function   ***********************************
-    // *************************************************************************
-    void Tone(uint16_t freq);
-
-    // *************************************************************************
-    // ** Private constructor. Only GetInstance() allow to access this class. **
-    // *************************************************************************
-    SoundDrv() : AppTask(SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY,
-                         "SoundDrv") {};
+    // Result code
+    ResultCode result = RESULT_OK;
 };
 
 #endif

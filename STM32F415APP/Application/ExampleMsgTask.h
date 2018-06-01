@@ -1,8 +1,8 @@
 //******************************************************************************
-//  @file InputTest.h
+//  @file ExampleMsgTask.h
 //  @author Nicolai Shlapunov
 //
-//  @details Application: Input Test Application Class, header
+//  @details Application: Example Message Task Class, header
 //
 //  @copyright Copyright (c) 2017, Devtronic & Nicolai Shlapunov
 //             All rights reserved.
@@ -15,62 +15,61 @@
 //
 //******************************************************************************
 
-#ifndef InputTest_h
-#define InputTest_h
+#ifndef MsgTaskTest_h
+#define MsgTaskTest_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
 #include "AppTask.h"
-#include "DisplayDrv.h"
-#include "InputDrv.h"
-#include "SoundDrv.h"
-#include "UiEngine.h"
-
-// *****************************************************************************
-// ***   Local const variables   ***********************************************
-// *****************************************************************************
-
-// *****************************************************************************
-// ***   Defines   *************************************************************
-// *****************************************************************************
-#define BG_Z (100)
 
 // *****************************************************************************
 // ***   Application Class   ***************************************************
 // *****************************************************************************
-class InputTest : public AppTask
+class ExampleMsgTask : public AppTask
 {
   public:
     // *************************************************************************
     // ***   Get Instance   ****************************************************
     // *************************************************************************
-    static InputTest& GetInstance(void);
+    static ExampleMsgTask& GetInstance(void);
 
     // *************************************************************************
-    // ***   Application Loop   ************************************************
+    // ***   TimerExpired function   *******************************************
     // *************************************************************************
-    virtual Result Loop();
+    virtual Result TimerExpired();
+
+    // *************************************************************************
+    // ***   ProcessMessage function   *****************************************
+    // *************************************************************************
+    virtual Result ProcessMessage();
 
   private:
-    // Display driver instance
-    DisplayDrv& display_drv = DisplayDrv::GetInstance();
-    // Input driver instance
-    InputDrv& input_drv = InputDrv::GetInstance();
-    // Sound driver instance
-    SoundDrv& sound_drv = SoundDrv::GetInstance();
+    // Timer period
+    static const uint32_t TASK_TIMER_PERIOD_MS = 1000U;
 
-    // *************************************************************************
-    // ***   ProcessUserInput   ************************************************
-    // *************************************************************************
-    static char* GetMenuStr(void* ptr, char* buf, uint32_t n, uint32_t add_param);
+    // Task queue message types
+    enum TaskQueueMsgType
+    {
+       TASK_TIMER_MSG
+    };
+
+    // Task queue message struct
+    struct TaskQueueMsg
+    {
+      TaskQueueMsgType type;
+    };
+
+    // Buffer for received task message
+    TaskQueueMsg rcv_msg;
 
     // *************************************************************************
     // ***   Private constructor   *********************************************
     // *************************************************************************
-    InputTest() : AppTask(APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY,
-                          "InputTest") {};
+    ExampleMsgTask() : AppTask(EXAMPLE_MSG_TASK_STACK_SIZE, EXAMPLE_MSG_TASK_PRIORITY,
+                               "ExampleMsgTask", 8U, sizeof(TaskQueueMsg), &rcv_msg,
+                               TASK_TIMER_PERIOD_MS) {};
 };
 
 #endif

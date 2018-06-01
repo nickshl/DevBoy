@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file SoundDrv.h
+//  @file RtosTick.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Sound Driver Class, header
+//  @details DevCore: FreeRTOS Tick Wrapper Class, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,111 +45,62 @@
 //
 //******************************************************************************
 
-#ifndef SoundDrv_h
-#define SoundDrv_h
+#ifndef RtosTick_h
+#define RtosTick_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "AppTask.h"
-#include "RtosMutex.h"
-#include "RtosSemaphore.h"
 
 // *****************************************************************************
-// ***   Sound Driver Class. This class implement work with sound.   ***********
+// ***   RtosTick   ************************************************************
 // *****************************************************************************
-class SoundDrv : public AppTask
+class RtosTick
 {
   public:
     // *************************************************************************
-    // ***   Get Instance   ****************************************************
+    // ***   GetTickCount   ****************************************************
     // *************************************************************************
-    // * This class is singleton. For use this class you must call GetInstance()
-    // * to receive reference to Sound Driver class
-    static SoundDrv& GetInstance(void);
+    static uint32_t GetTickCount();
 
     // *************************************************************************
-    // ***   Init Sound Driver Task   ******************************************
+    // ***   GetTimeMs   *******************************************************
     // *************************************************************************
-    virtual void InitTask(TIM_HandleTypeDef *htm);
+    static uint32_t GetTimeMs();
 
     // *************************************************************************
-    // ***   Sound Driver Setup   **********************************************
+    // ***   DelayTicks   ******************************************************
     // *************************************************************************
-    virtual Result Setup();
+    static void DelayTicks(uint32_t ticks);
 
     // *************************************************************************
-    // ***   Sound Driver Loop   ***********************************************
+    // ***   DelayMs   *********************************************************
     // *************************************************************************
-    virtual Result Loop();
+    static void DelayMs(uint32_t time_ms);
 
     // *************************************************************************
-    // ***   Beep function   ***************************************************
+    // ***   DelayUntilTicks   *************************************************
     // *************************************************************************
-    void Beep(uint16_t freq, uint16_t del, bool pause_after_play = false);
+    static void DelayUntilTicks(uint32_t& last_wake_ticks, uint32_t ticks);
 
     // *************************************************************************
-    // ***   Play sound function   *********************************************
+    // ***   DelayUntilMs   ****************************************************
     // *************************************************************************
-    void PlaySound(const uint16_t* melody, uint16_t size, uint16_t temp_ms = 100U, bool rep = false);
+    static void DelayUntilMs(uint32_t& last_wake_ticks, uint32_t time_ms);
 
     // *************************************************************************
-    // ***   Stop sound function   *********************************************
+    // ***   MsToTicks   *******************************************************
     // *************************************************************************
-    void StopSound(void);
+    static uint32_t MsToTicks(uint32_t time_ms);
 
     // *************************************************************************
-    // ***   Mute sound function   *********************************************
+    // ***   TicksToMs   *******************************************************
     // *************************************************************************
-    void Mute(bool mute_flag);
+    static uint32_t TicksToMs(uint32_t ticks);
 
-    // *************************************************************************
-    // ***   Is sound played function   ****************************************
-    // *************************************************************************
-    bool IsSoundPlayed(void);
-
-  private:
-    // Timer handle
-    TIM_HandleTypeDef* htim = SOUND_HTIM;
-    // Timer channel
-    uint32_t channel = SOUND_CHANNEL;
-    
-    // Ticks variable
-    uint32_t last_wake_ticks = 0U;
-
-    // Pointer to table contains melody
-    const uint16_t* sound_table = nullptr;
-    // Size of table
-    uint16_t sound_table_size = 0U;
-    // Current position
-    uint16_t sound_table_position = 0U;
-    // Current frequency delay
-    uint16_t current_delay = 0U;
-    // Time for one frequency in ms
-    uint32_t delay_ms = 100U;
-    // Repeat flag
-    bool repeat = false;
-
-    // Mute flag
-    bool mute = false;
-
-    // Mutex to synchronize when playing melody frames
-    RtosMutex melody_mutex;
-
-    // Semaphore for start play sound
-    RtosSemaphore sound_update;
-
-    // *************************************************************************
-    // ***   Process Button Input function   ***********************************
-    // *************************************************************************
-    void Tone(uint16_t freq);
-
-    // *************************************************************************
-    // ** Private constructor. Only GetInstance() allow to access this class. **
-    // *************************************************************************
-    SoundDrv() : AppTask(SOUND_DRV_TASK_STACK_SIZE, SOUND_DRV_TASK_PRIORITY,
-                         "SoundDrv") {};
+ private:
+    // None
 };
 
 #endif

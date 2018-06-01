@@ -47,6 +47,9 @@
 
 #include "DevCfg.h"
 #include "AppTask.h"
+#include "RtosMutex.h"
+#include "RtosSemaphore.h"
+
 #include "ILI9341.h"
 #include "XPT2046.h"
 #include "VisObject.h"
@@ -58,7 +61,7 @@
 // *****************************************************************************
 // ***   Display Driver Class   ************************************************
 // *****************************************************************************
-class DisplayDrv : AppTask
+class DisplayDrv : public AppTask
 {
   public:
     // *************************************************************************
@@ -67,54 +70,49 @@ class DisplayDrv : AppTask
     static DisplayDrv& GetInstance(void);
 
     // *************************************************************************
-    // ***   Init Display Driver Task   ****************************************
-    // *************************************************************************
-    void InitTask(void);
-
-    // *************************************************************************
     // ***   Display Driver Setup   ********************************************
     // *************************************************************************
-    void Setup(void *pvParameters);
+    virtual Result Setup();
 
     // *************************************************************************
     // ***   Display Driver Loop   *********************************************
     // *************************************************************************
-    bool Loop(void *pvParameters);
+    virtual Result Loop();
 
     // *************************************************************************
     // ***   Add Visual Object to object list   ********************************
     // *************************************************************************
-    bool AddVisObjectToList(VisObject * obj, uint32_t z);
+    Result AddVisObjectToList(VisObject* obj, uint32_t z);
 
     // *************************************************************************
     // ***   Delete Visual Object from object list   ***************************
     // *************************************************************************
-    bool DelVisObjectFromList(VisObject * obj);
+    Result DelVisObjectFromList(VisObject* obj);
 
     // *************************************************************************
     // ***   Lock display   ****************************************************
     // *************************************************************************
-    bool LockDisplay(uint32_t wait_ms = portMAX_DELAY);
+    Result LockDisplay(uint32_t wait_ms = portMAX_DELAY);
 
     // *************************************************************************
     // ***   Unlock display   **************************************************
     // *************************************************************************
-    void UnlockDisplay(void);
+    Result UnlockDisplay(void);
 
     // *************************************************************************
     // ***   Lock display line   ***********************************************
     // *************************************************************************
-    bool LockDisplayLine(uint32_t wait_ms = portMAX_DELAY);
+    Result LockDisplayLine(uint32_t wait_ms = portMAX_DELAY);
 
     // *************************************************************************
     // ***   Unlock display line   *********************************************
     // *************************************************************************
-    void UnlockDisplayLine(void);
+    Result UnlockDisplayLine(void);
 
     // *************************************************************************
     // ***   Update display   **************************************************
     // *************************************************************************
-    void UpdateDisplay(void);
+    Result UpdateDisplay(void);
 
     // *************************************************************************
     // ***   Set Update Mode   *************************************************
@@ -185,19 +183,20 @@ class DisplayDrv : AppTask
     // FPS string
     String fps_str;
 
-    // Mutex to synchronize when drawing lines
-    SemaphoreHandle_t line_mutex = xSemaphoreCreateMutex();
-    // Mutex to synchronize when drawing frames
-    SemaphoreHandle_t frame_mutex = xSemaphoreCreateMutex();
     // Semaphore for update screen
-    SemaphoreHandle_t screen_update = xSemaphoreCreateBinary();
+    RtosSemaphore screen_update;
+    // Mutex to synchronize when drawing lines
+    RtosMutex line_mutex;
+    // Mutex to synchronize when drawing frames
+    RtosMutex frame_mutex;
     // Mutex for synchronize when reads touch coordinates
-    SemaphoreHandle_t touchscreen_mutex = xSemaphoreCreateMutex();
+    RtosMutex touchscreen_mutex;
 
     // *************************************************************************
     // ** Private constructor. Only GetInstance() allow to access this class. **
     // *************************************************************************
-    DisplayDrv() {};
+    DisplayDrv() : AppTask(DISPLAY_DRV_TASK_STACK_SIZE, DISPLAY_DRV_TASK_PRIORITY,
+                           "DisplayDrv") {};
 };
 
 #endif

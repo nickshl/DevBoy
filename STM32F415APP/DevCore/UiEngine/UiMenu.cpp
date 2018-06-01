@@ -169,7 +169,7 @@ bool UiMenu::Run(void)
       // Refresh display
       display_drv.UpdateDisplay();
       // Delay for update screen
-      vTaskDelay(100);
+      RtosTick::DelayTicks(100);
 
       // Process user input
       ProcessUserInput();

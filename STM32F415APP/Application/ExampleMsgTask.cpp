@@ -1,10 +1,10 @@
 //******************************************************************************
-//  @file AppMain.cpp
+//  @file ExampleMsgTask.cpp
 //  @author Nicolai Shlapunov
 //
-//  @details Application: Main file, header
+//  @details Application: Example Message Task Class, implementation
 //
-//  @copyright Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//  @copyright Copyright (c) 2017, Devtronic & Nicolai Shlapunov
 //             All rights reserved.
 //
 //  @section SUPPORT
@@ -18,44 +18,46 @@
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
-#include "DevCfg.h"
-#include "DisplayDrv.h"
-#include "InputDrv.h"
 #include "ExampleMsgTask.h"
 
-#include "Application.h"
-
 // *****************************************************************************
-// ***   Main function   *******************************************************
+// ***   Get Instance   ********************************************************
 // *****************************************************************************
-extern "C" void AppMain(void)
+ExampleMsgTask& ExampleMsgTask::GetInstance(void)
 {
-  // Init Display Driver Task
-  DisplayDrv::GetInstance().InitTask();
-  // Init Input Driver Task
-  InputDrv::GetInstance().InitTask(nullptr, &hadc2);
-  // Init Sound Driver Task
-  SoundDrv::GetInstance().InitTask(&htim4);
-
-  // Init Messages Test Task
-  ExampleMsgTask::GetInstance().InitTask();
-
-  // Init Application Task
-  Application::GetInstance().InitTask();
+   static ExampleMsgTask example_msg_task;
+   return example_msg_task;
 }
 
 // *****************************************************************************
-// ***   Stack overflow hook function   ****************************************
+// ***   TimerExpired function   ***********************************************
 // *****************************************************************************
-extern "C" void vApplicationStackOverflowHook(TaskHandle_t* px_task, signed portCHAR* pc_task_name)
+Result ExampleMsgTask::TimerExpired()
 {
-  while(1);
+  TaskQueueMsg msg;
+  msg.type = TASK_TIMER_MSG;
+  Result result = SendTaskMessage(&msg);
+  return result;
 }
 
 // *****************************************************************************
-// ***   Malloc failed hook function   *****************************************
+// ***   ProcessMessage function   *********************************************
 // *****************************************************************************
-extern "C" void vApplicationMallocFailedHook(void)
+Result ExampleMsgTask::ProcessMessage()
 {
-  while(1);
+  Result result = Result::ERR_NULL_PTR;
+
+  switch(rcv_msg.type)
+  {
+    case TASK_TIMER_MSG:
+      result = Result::RESULT_OK;
+      break;
+
+    default:
+      result = Result::ERR_INVALID_ITEM;
+      break;
+  }
+
+  return result;
 }
+

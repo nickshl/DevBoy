@@ -42,7 +42,6 @@
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "semphr.h"
 
 // *****************************************************************************
 // * VisObject class. This class implements base Visual Objects properties.
@@ -65,16 +64,13 @@ class VisObject
     // *************************************************************************
     // ***   VisObject   *******************************************************
     // ************************************************************************* 
-    // * Constructor. Created semaphore for lock VisObject before change
-    // * properties or output to screen. We cant change properties if VisObject
-    // * draw line on screen now. It can cause problems.
-    VisObject();
+    VisObject() {};
 
     // *************************************************************************
     // ***   ~VisObject   ******************************************************
     // *************************************************************************
-    // * Destructor. Call DelVisObjectFromList()from DisplayDrv class for remove
-    // * from list before delete and delete semaphore.
+    // * Destructor. Call DelVisObjectFromList() from DisplayDrv class for
+    // * remove from list before delete and delete semaphore.
     virtual ~VisObject();
 
     // *************************************************************************

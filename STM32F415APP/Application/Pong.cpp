@@ -20,6 +20,10 @@
 // *****************************************************************************
 #include "Pong.h"
 
+// *****************************************************************************
+// ***   Definitions   *********************************************************
+// *****************************************************************************
+
 #define BOX_W 10
 #define BOX_H 50
 
@@ -37,18 +41,9 @@ Pong& Pong::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void Pong::InitTask(void)
-{
-  // Create task
-  CreateTask("Pong", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   Application Loop   ****************************************************
 // *****************************************************************************
-bool Pong::Loop(void* pvParameters)
+Result Pong::Loop()
 {
   if(   (input_drv.GetDeviceType(InputDrv::EXT_LEFT) == InputDrv::EXT_DEV_BTN)
      || (input_drv.GetDeviceType(InputDrv::EXT_RIGHT) == InputDrv::EXT_DEV_BTN) )
@@ -65,15 +60,15 @@ bool Pong::Loop(void* pvParameters)
     (void) input_drv.GetEncoderState(InputDrv::EXT_RIGHT, last_enc_right_val);
 
     // Initialize random seed
-    srand(xTaskGetTickCount());
+    srand(RtosTick::GetTickCount());
 
     char scr_str[32] = {" 0 : 0 "};
     String score_str(scr_str, (display_drv.GetScreenW() - strlen(scr_str)*String::GetFontW(String::FONT_12x16))/2,
                      16, COLOR_WHITE, String::FONT_12x16);
     score_str.Show(32768);
 
-    // Init time variable
-    uint32_t last_wake_time = xTaskGetTickCount();
+    // Init ticks variable
+    uint32_t last_wake_ticks = RtosTick::GetTickCount();
 
     Circle ball(150-30, 120+30, 5, COLOR_MAGENTA, true);
     ball.Show(32768+1);
@@ -86,7 +81,7 @@ bool Pong::Loop(void* pvParameters)
     // Update Display
     display_drv.UpdateDisplay();
     // Pause until next tick
-    vTaskDelayUntil(&last_wake_time, 200U);
+    RtosTick::DelayUntilMs(last_wake_ticks, 200U);
         
     // Clear Game Over flag before start game
     game_over = false;
@@ -204,7 +199,7 @@ bool Pong::Loop(void* pvParameters)
         // Update Display
         display_drv.UpdateDisplay();
         // Pause until next tick
-        vTaskDelayUntil(&last_wake_time, TICK_MS);
+        RtosTick::DelayUntilMs(last_wake_ticks, TICK_MS);
     }
     box_left.Hide();
     box_right.Hide();
@@ -212,7 +207,7 @@ bool Pong::Loop(void* pvParameters)
   }
 
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *****************************************************************************

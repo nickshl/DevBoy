@@ -57,7 +57,7 @@
 // *****************************************************************************
 // * Input Driver Class. This class implement work with user input elements like 
 // * buttons and encoders.
-class InputDrv : AppTask
+class InputDrv : public AppTask
 {
   public:
     // *************************************************************************
@@ -116,19 +116,19 @@ class InputDrv : AppTask
     // *************************************************************************
     // * This function initialize Input Driver class. If htim provided, this 
     // * timer will be used instead FreeRTOS task.
-    void InitTask(TIM_HandleTypeDef* htm, ADC_HandleTypeDef* had);
+    virtual void InitTask(TIM_HandleTypeDef* htm, ADC_HandleTypeDef* had);
 
     // *************************************************************************
     // ***   Input Driver Setup   **********************************************
     // *************************************************************************
-    void Setup(void* pvParameters);
+    virtual Result Setup();
 
     // *************************************************************************
     // ***   Input Driver Loop   ***********************************************
     // *************************************************************************
     // * If FreeRTOS task used, this function just call ProcessInput() with 1 ms
     // * period. If FreeRTOS tick is 1 ms - this task must have highest priority 
-    bool Loop(void* pvParameters);
+    virtual Result Loop();
 
     // *************************************************************************
     // ***   Process Input function   ******************************************
@@ -218,8 +218,8 @@ class InputDrv : AppTask
     // Joystich threshold
     const static int32_t JOY_THRESHOLD = 1000;
 
-    // Time variable
-    uint32_t last_wake_time = 0U;
+    // Ticks variable
+    uint32_t last_wake_ticks = 0U;
 
     // *************************************************************************
     // ***   Structure to describe button   ************************************
@@ -389,7 +389,8 @@ class InputDrv : AppTask
     // *************************************************************************
     // ** Private constructor. Only GetInstance() allow to access this class. **
     // *************************************************************************
-    InputDrv() {};
+    InputDrv() : AppTask(INPUT_DRV_TASK_STACK_SIZE, INPUT_DRV_TASK_PRIORITY,
+                         "InputDrv") {};
 };
 
 #endif

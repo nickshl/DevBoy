@@ -32,18 +32,9 @@ GraphDemo& GraphDemo::GetInstance(void)
 }
 
 // *****************************************************************************
-// ***   Init User Application Task   ******************************************
-// *****************************************************************************
-void GraphDemo::InitTask(void)
-{
-  // Create task
-  CreateTask("GraphDemo", APPLICATION_TASK_STACK_SIZE, APPLICATION_TASK_PRIORITY);
-}
-
-// *****************************************************************************
 // ***   GraphDemo Loop   ******************************************************
 // *****************************************************************************
-bool GraphDemo::Loop(void* pvParameters)
+Result GraphDemo::Loop()
 {
   static VisObjectRandomMover* pointer_list[60];
   uint32_t list_item_cnt = 0;
@@ -91,7 +82,7 @@ bool GraphDemo::Loop(void* pvParameters)
   while (1)
   {
     // Lock Display
-    if(display_drv.LockDisplay())
+    if(display_drv.LockDisplay() == Result::RESULT_OK)
     {
       // Move all objects
       for(uint32_t i=0; i < list_item_cnt; i++) pointer_list[i]->Process();
@@ -100,11 +91,11 @@ bool GraphDemo::Loop(void* pvParameters)
       // Update Display
       display_drv.UpdateDisplay();
       // Pause for switch to Display Task
-      vTaskDelay(1U);
+      RtosTick::DelayTicks(1U);
     }
   }
   // Always run
-  return true;
+  return Result::RESULT_OK;
 }
 
 // *************************************************************************

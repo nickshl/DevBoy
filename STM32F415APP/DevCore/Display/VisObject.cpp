@@ -22,23 +22,12 @@
 #include "DisplayDrv.h" // for DelVisObjectFromList()
 
 // *****************************************************************************
-// ***   Constructor   *********************************************************
-// *****************************************************************************
-VisObject::VisObject()
-{    
-//  // Initialize mutex
-//  semaphore = xSemaphoreCreateMutex();
-};
-
-// *****************************************************************************
 // ***   Destructor   **********************************************************
 // *****************************************************************************
 VisObject::~VisObject()
 {
   // Remove object from object list before delete
   DisplayDrv::GetInstance().DelVisObjectFromList(this);
-//  // Delete mutex
-//  vSemaphoreDelete(semaphore);
 }
 
 // *****************************************************************************
