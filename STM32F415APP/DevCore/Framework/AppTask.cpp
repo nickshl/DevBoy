@@ -117,7 +117,7 @@ Result AppTask::IntLoop()
          case CTRL_TASK_QUEUE_MSG:
          {
            // Non blocking read from the task queue
-           result = task_queue.Receive(&task_msg_ptr, 0U);
+           result = task_queue.Receive(task_msg_ptr, 0U);
            // If successful
            if(result.IsGood())
            {
