@@ -37,12 +37,16 @@ void AppTask::CreateTask()
   // If interval timer period isn't zero or task queue present
   if((timer.GetTimerPeriod() != 0U) || (task_queue.GetQueueLen() != 0U))
   {
+    // Set Control Queue name
+    ctrl_queue.SetName(task_name, "Ctrl");
     // Create control queue
     result = ctrl_queue.Create();
   }
   // If task queue present
   if(task_queue.GetQueueLen() != 0U)
   {
+    // Set Task Queue name
+    task_queue.SetName(task_name, "Task");
     // Create task queue
     result |= task_queue.Create();
   }

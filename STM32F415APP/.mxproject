@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Work/Software/STM32F415APP/Inc
+HeaderPath=D:/Work/Software/STM32F415APP/Inc
 HeaderFiles=gpio.h;adc.h;dma.h;ffconf.h;bsp_driver_sd.h;sd_diskio.h;fatfs.h;FreeRTOSConfig.h;iwdg.h;rtc.h;sdio.h;spi.h;tim.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;usb_device.h;usbd_conf.h;usbd_desc.h;usbd_cdc_if.h;
-SourcePath=C:/Work/Software/STM32F415APP/Src
+SourcePath=D:/Work/Software/STM32F415APP/Src
 SourceFiles=gpio.c;adc.c;dma.c;bsp_driver_sd.c;sd_diskio.c;fatfs.c;freertos.c;iwdg.c;rtc.c;sdio.c;spi.c;tim.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;usb_device.c;usbd_conf.c;usbd_desc.c;usbd_cdc_if.c;
 
 [PreviousLibFiles]

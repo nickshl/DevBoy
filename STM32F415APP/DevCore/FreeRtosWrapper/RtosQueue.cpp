@@ -46,7 +46,7 @@ RtosQueue::~RtosQueue()
 // *****************************************************************************
 // ***   ~RtosQueue   **********************************************************
 // *****************************************************************************
-void RtosQueue::SetName(const char* name)
+void RtosQueue::SetName(const char* name, const char* add_name)
 {
   uint32_t i = 0U;
   // If name pointer isn't null
@@ -56,6 +56,15 @@ void RtosQueue::SetName(const char* name)
     for(; (i < MAX_QUEUE_NAME_LEN - 1U) && (name[i] != '\0'); i++)
     {
       queue_name[i] = name[i];
+    }
+  }
+  // If additional name pointer isn't null
+  if(add_name != nullptr)
+  {
+    // Copy additional queue name
+    for(uint32_t j = 0U; (i < MAX_QUEUE_NAME_LEN - 1U) && (add_name[j] != '\0'); i++, j++)
+    {
+      queue_name[i] = add_name[j];
     }
   }
   // Set null-terminator for string

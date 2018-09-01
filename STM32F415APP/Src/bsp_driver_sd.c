@@ -276,6 +276,68 @@ void BSP_SD_GetCardInfo(HAL_SD_CardInfoTypeDef *CardInfo)
   /* Get SD card Information */
   HAL_SD_GetCardInfo(&hsd, CardInfo);
 }
+
+/* USER CODE BEGIN BeforeCallBacksSection */
+/* can be used to modify previous code / undefine following code / add code */
+/* USER CODE END BeforeCallBacksSection */
+/**
+  * @brief SD Abort callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
+{
+  BSP_SD_AbortCallback();
+}
+
+/**
+  * @brief Tx Transfer completed callback
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
+{
+  BSP_SD_WriteCpltCallback();
+}
+
+/**
+  * @brief Rx Transfer completed callback
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
+{
+  BSP_SD_ReadCpltCallback();
+}
+
+/* USER CODE BEGIN CallBacksSection_C */
+/**
+  * @brief BSP SD Abort callback
+  * @retval None
+  */
+__weak void BSP_SD_AbortCallback(void)
+{
+
+}
+
+/**
+  * @brief BSP Tx Transfer completed callback
+  * @retval None
+  */
+__weak void BSP_SD_WriteCpltCallback(void)
+{
+
+}
+
+/**
+  * @brief BSP Rx Transfer completed callback
+  * @retval None
+  */
+__weak void BSP_SD_ReadCpltCallback(void)
+{
+
+}
+/* USER CODE END CallBacksSection_C */
 #endif
 
 /**

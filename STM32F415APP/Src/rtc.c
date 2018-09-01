@@ -73,6 +73,9 @@ void MX_RTC_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
 
 }
 

@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    sd_diskio.c (based on sd_diskio_dma_rtos_template.c v2.0.2)
+  * @file    sd_diskio.c (based on sd_diskio_dma_rtos_template.c v2.0.2 as FreeRTOS is enabled)
   * @brief   SD Disk I/O driver
   ******************************************************************************
   * This notice applies to any and all portions of this file
@@ -371,8 +371,7 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
    ===============================================================================
   */
 //void BSP_SD_WriteCpltCallback(uint32_t SdCard)
-//void BSP_SD_WriteCpltCallback(void)
-void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
+void BSP_SD_WriteCpltCallback(void)
 {
   /*
    * No need to add an "osKernelRunning()" check here, as the SD_initialize()
@@ -395,8 +394,7 @@ void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
    ===============================================================================
   */
 //void BSP_SD_ReadCpltCallback(uint32_t SdCard)
-//void BSP_SD_ReadCpltCallback(void)
-void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
+void BSP_SD_ReadCpltCallback(void)
 {
   /*
    * No need to add an "osKernelRunning()" check here, as the SD_initialize()
