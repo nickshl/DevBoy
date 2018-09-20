@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file Result.h
+//  @file IIic.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Result codes, header
+//  @details DevCore: I2C driver interface, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,188 +45,112 @@
 //
 //******************************************************************************
 
-#ifndef Result_h
-#define Result_h
+#ifndef IIic_h
+#define IIic_h
 
 // *****************************************************************************
-// ***   Result   **************************************************************
+// ***   Includes   ************************************************************
 // *****************************************************************************
-class Result
+#include "DevCfg.h"
+
+// *****************************************************************************
+// ***   I2C Driver Interface   ************************************************
+// *****************************************************************************
+class IIic
 {
   public:
     // *************************************************************************
-    // ***   Enum with all possible result codes   *****************************
+    // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    enum ResultCode
-    {
-      // ***   No error   ******************************************************
-      RESULT_OK = 0,
-
-      // ***   Generic   *******************************************************
-      ERR_NULL_PTR,
-      ERR_BAD_PARAMETER,
-      ERR_INVALID_ITEM,
-      ERR_NOT_IMPLEMENTED,
-      ERR_BUSY,
-
-      // ***   RTOS errors   ***************************************************
-      ERR_TASK_CREATE,
-      ERR_QUEUE_CREATE,
-      ERR_QUEUE_GENERAL,
-      ERR_QUEUE_EMPTY,
-      ERR_QUEUE_READ,
-      ERR_QUEUE_WRITE,
-      ERR_QUEUE_RESET,
-      ERR_TIMER_CREATE,
-      ERR_TIMER_START,
-      ERR_TIMER_UPDATE,
-      ERR_TIMER_STOP,
-      ERR_MUTEX_CREATE,
-      ERR_MUTEX_LOCK,
-      ERR_MUTEX_RELEASE,
-      ERR_SEMAPHORE_CREATE,
-      ERR_SEMAPHORE_TAKE,
-      ERR_SEMAPHORE_GIVE,
-
-      // ***   UART errors   ***************************************************
-      ERR_UART_GENERAL,
-      ERR_UART_TRANSMIT,
-      ERR_UART_RECEIVE,
-      ERR_UART_EMPTY,
-      ERR_UART_BUSY,
-      ERR_UART_TIMEOUT,
-      ERR_UART_UNKNOWN,
-
-      // ***   I2C errors   ****************************************************
-      ERR_I2C_GENERAL,
-      ERR_I2C_BUSY,
-      ERR_I2C_TIMEOUT,
-      ERR_I2C_UNKNOWN,
-
-      // ***   SPI errors   ****************************************************
-      ERR_SPI_GENERAL,
-      ERR_SPI_BUSY,
-      ERR_SPI_TIMEOUT,
-      ERR_SPI_UNKNOWN,
-
-      // ***   Elements count   ************************************************
-      RESULTS_CNT
-    };
+    explicit IIic() {};
 
     // *************************************************************************
-    // ***   Result   **********************************************************
+    // ***   Public: Destructor   **********************************************
     // *************************************************************************
-    Result() {};
+    virtual ~IIic() {};
 
     // *************************************************************************
-    // ***   Result   **********************************************************
+    // ***   Public: Init   ****************************************************
     // *************************************************************************
-    Result(ResultCode res)
-    {
-      result = res;
-    }
+    virtual Result Init() = 0;
 
     // *************************************************************************
-    // ***   IsGood   **********************************************************
+    // ***   Public: DeInit   **************************************************
     // *************************************************************************
-    bool IsGood() const
-    {
-      return result == RESULT_OK;
-    }
+    virtual Result DeInit() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   IsBad   ***********************************************************
+    // ***   Public: Enable   **************************************************
     // *************************************************************************
-    bool IsBad() const
-    {
-      return result != RESULT_OK;
-    }
+    virtual Result Enable() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator ResultCode   *********************************************
+    // ***   Public: Disable   *************************************************
     // *************************************************************************
-    operator ResultCode() const
-    {
-      return result;
-    }
+    virtual Result Disable() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator=   *******************************************************
+    // ***   Public: Reset   ***************************************************
     // *************************************************************************
-    Result& operator=(ResultCode res)
-    {
-      result = res;
-      return *this;
-    }
+    virtual Result Reset() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator=   *******************************************************
+    // ***   Public: IsDeviceReady   *******************************************
     // *************************************************************************
-    Result& operator=(const Result& r_arg)
-    {
-      result = r_arg.result;
-      return *this;
-    }
+    virtual Result IsDeviceReady(uint16_t addr, uint8_t retries = 1U) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator|=   ******************************************************
+    // ***   Public: Transfer   ************************************************
     // *************************************************************************
-    Result& operator|=(ResultCode res)
-    {
-      if(result == RESULT_OK)
-      {
-        result = res;
-      }
-      return *this;
-    }
+    virtual Result Transfer(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size, uint8_t* rx_buf_ptr, uint32_t rx_size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator|=   ******************************************************
+    // ***   Public: Write   ***************************************************
     // *************************************************************************
-    Result& operator|=(const Result& r_arg)
-    {
-      if(result == RESULT_OK)
-      {
-        result = r_arg.result;
-      }
-      return *this;
-    }
+    virtual Result Write(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator==   ******************************************************
+    // ***   Public: Read   ****************************************************
     // *************************************************************************
-    bool operator==(ResultCode res) const
-    {
-       return(result == res);
-    }
+    virtual Result Read(uint16_t addr, uint8_t* rx_buf_ptr, uint32_t rx_size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator==   ******************************************************
+    // ***   Public: WriteAsync   **********************************************
     // *************************************************************************
-    bool operator==(const Result& r_arg) const
-    {
-      return result == r_arg.result;
-    }
+    virtual Result WriteAsync(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator!=   ******************************************************
+    // ***   Public: ReadAsync   ***********************************************
     // *************************************************************************
-    bool operator!=(ResultCode res) const
-    {
-      return(result != res);
-    }
+    virtual Result ReadAsync(uint16_t addr, uint8_t* rx_buf_ptr, uint32_t rx_size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   operator!=   ******************************************************
+    // ***   Public: IsBusy   **************************************************
     // *************************************************************************
-    bool operator!=(const Result& r_arg) const
-    {
-      return(result != r_arg.result);
-    }
+    virtual bool IsBusy(void) {return false;}
+
+    // *************************************************************************
+    // ***   Public: SetTxTimeout   ********************************************
+    // *************************************************************************
+    virtual void SetTxTimeout(uint16_t timeout_ms) {i2c_tx_timeout_ms = timeout_ms;}
+
+    // *************************************************************************
+    // ***   Public: SetRxTimeout   ********************************************
+    // *************************************************************************
+    virtual void SetRxTimeout(uint16_t timeout_ms) {i2c_rx_timeout_ms = timeout_ms;}
+
+  protected:
+    // Timeout for I2C TX operation
+    uint16_t i2c_tx_timeout_ms = 5U;
+
+    // Timeout for I2C RX operation
+    uint16_t i2c_rx_timeout_ms = 5U;
 
   private:
-    // Result code
-    ResultCode result = RESULT_OK;
+    // *************************************************************************
+    // ***   Private: Constructors and assign operator - prevent copying   *****
+    // *************************************************************************
+    IIic(const IIic&);
 };
 
 #endif

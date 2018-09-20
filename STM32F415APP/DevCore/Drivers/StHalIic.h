@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file Result.h
+//  @file StHalIic.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Result codes, header
+//  @details DevCore: STM32 HAL I2C driver, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,188 +45,109 @@
 //
 //******************************************************************************
 
-#ifndef Result_h
-#define Result_h
+#ifndef StmHalIic_h
+#define StmHalIic_h
 
 // *****************************************************************************
-// ***   Result   **************************************************************
+// ***   Includes   ************************************************************
 // *****************************************************************************
-class Result
+#include "DevCfg.h"
+#include "IIic.h"
+
+// *****************************************************************************
+// ***   This driver can be compiled only if UART configured in CubeMX   *******
+// *****************************************************************************
+#ifndef HAL_I2C_MODULE_ENABLED
+  typedef uint32_t I2C_HandleTypeDef; // Dummy I2C handle for header compilation
+#endif
+
+// *****************************************************************************
+// ***   STM32 HAL I2C Driver Class   ******************************************
+// *****************************************************************************
+class StHalIic : public IIic
 {
   public:
     // *************************************************************************
-    // ***   Enum with all possible result codes   *****************************
+    // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    enum ResultCode
-    {
-      // ***   No error   ******************************************************
-      RESULT_OK = 0,
-
-      // ***   Generic   *******************************************************
-      ERR_NULL_PTR,
-      ERR_BAD_PARAMETER,
-      ERR_INVALID_ITEM,
-      ERR_NOT_IMPLEMENTED,
-      ERR_BUSY,
-
-      // ***   RTOS errors   ***************************************************
-      ERR_TASK_CREATE,
-      ERR_QUEUE_CREATE,
-      ERR_QUEUE_GENERAL,
-      ERR_QUEUE_EMPTY,
-      ERR_QUEUE_READ,
-      ERR_QUEUE_WRITE,
-      ERR_QUEUE_RESET,
-      ERR_TIMER_CREATE,
-      ERR_TIMER_START,
-      ERR_TIMER_UPDATE,
-      ERR_TIMER_STOP,
-      ERR_MUTEX_CREATE,
-      ERR_MUTEX_LOCK,
-      ERR_MUTEX_RELEASE,
-      ERR_SEMAPHORE_CREATE,
-      ERR_SEMAPHORE_TAKE,
-      ERR_SEMAPHORE_GIVE,
-
-      // ***   UART errors   ***************************************************
-      ERR_UART_GENERAL,
-      ERR_UART_TRANSMIT,
-      ERR_UART_RECEIVE,
-      ERR_UART_EMPTY,
-      ERR_UART_BUSY,
-      ERR_UART_TIMEOUT,
-      ERR_UART_UNKNOWN,
-
-      // ***   I2C errors   ****************************************************
-      ERR_I2C_GENERAL,
-      ERR_I2C_BUSY,
-      ERR_I2C_TIMEOUT,
-      ERR_I2C_UNKNOWN,
-
-      // ***   SPI errors   ****************************************************
-      ERR_SPI_GENERAL,
-      ERR_SPI_BUSY,
-      ERR_SPI_TIMEOUT,
-      ERR_SPI_UNKNOWN,
-
-      // ***   Elements count   ************************************************
-      RESULTS_CNT
-    };
+    explicit StHalIic(I2C_HandleTypeDef& hi2c_ref) : hi2c(hi2c_ref) {};
 
     // *************************************************************************
-    // ***   Result   **********************************************************
+    // ***   Public: Destructor   **********************************************
     // *************************************************************************
-    Result() {};
+    ~StHalIic() {};
 
     // *************************************************************************
-    // ***   Result   **********************************************************
+    // ***   Public: Init   ****************************************************
     // *************************************************************************
-    Result(ResultCode res)
-    {
-      result = res;
-    }
+    virtual Result Init() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   IsGood   **********************************************************
+    // ***   Public: Enable   **************************************************
     // *************************************************************************
-    bool IsGood() const
-    {
-      return result == RESULT_OK;
-    }
+    virtual Result Enable();
 
     // *************************************************************************
-    // ***   IsBad   ***********************************************************
+    // ***   Public: Disable   *************************************************
     // *************************************************************************
-    bool IsBad() const
-    {
-      return result != RESULT_OK;
-    }
+    virtual Result Disable();
 
     // *************************************************************************
-    // ***   operator ResultCode   *********************************************
+    // ***   Public: Reset   ***************************************************
     // *************************************************************************
-    operator ResultCode() const
-    {
-      return result;
-    }
+    virtual Result Reset();
 
     // *************************************************************************
-    // ***   operator=   *******************************************************
+    // ***   Public: IsDeviceReady   *******************************************
     // *************************************************************************
-    Result& operator=(ResultCode res)
-    {
-      result = res;
-      return *this;
-    }
+    virtual Result IsDeviceReady(uint16_t addr, uint8_t retries = 1U);
 
     // *************************************************************************
-    // ***   operator=   *******************************************************
+    // ***   Public: Transfer   ************************************************
     // *************************************************************************
-    Result& operator=(const Result& r_arg)
-    {
-      result = r_arg.result;
-      return *this;
-    }
+    virtual Result Transfer(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size,
+                            uint8_t* rx_buf_ptr, uint32_t rx_size);
 
     // *************************************************************************
-    // ***   operator|=   ******************************************************
+    // ***   Public: Write   ***************************************************
     // *************************************************************************
-    Result& operator|=(ResultCode res)
-    {
-      if(result == RESULT_OK)
-      {
-        result = res;
-      }
-      return *this;
-    }
+    virtual Result Write(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size);
 
     // *************************************************************************
-    // ***   operator|=   ******************************************************
+    // ***   Public: Read   ****************************************************
     // *************************************************************************
-    Result& operator|=(const Result& r_arg)
-    {
-      if(result == RESULT_OK)
-      {
-        result = r_arg.result;
-      }
-      return *this;
-    }
+    virtual Result Read(uint16_t addr, uint8_t* rx_buf_ptr, uint32_t rx_size);
 
     // *************************************************************************
-    // ***   operator==   ******************************************************
+    // ***   Public: WriteAsync   **********************************************
     // *************************************************************************
-    bool operator==(ResultCode res) const
-    {
-       return(result == res);
-    }
+    virtual Result WriteAsync(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size);
 
     // *************************************************************************
-    // ***   operator==   ******************************************************
+    // ***   Public: ReadAsync   ***********************************************
     // *************************************************************************
-    bool operator==(const Result& r_arg) const
-    {
-      return result == r_arg.result;
-    }
+    virtual Result ReadAsync(uint16_t addr, uint8_t* rx_buf_ptr, uint32_t rx_size);
 
     // *************************************************************************
-    // ***   operator!=   ******************************************************
+    // ***   Public: IsBusy   **************************************************
     // *************************************************************************
-    bool operator!=(ResultCode res) const
-    {
-      return(result != res);
-    }
-
-    // *************************************************************************
-    // ***   operator!=   ******************************************************
-    // *************************************************************************
-    bool operator!=(const Result& r_arg) const
-    {
-      return(result != r_arg.result);
-    }
+    virtual bool IsBusy(void);
 
   private:
-    // Result code
-    ResultCode result = RESULT_OK;
+    // Reference to the I2C handle
+    I2C_HandleTypeDef& hi2c;
+
+    // *************************************************************************
+    // ***   Private: ConvertResult   ******************************************
+    // *************************************************************************
+    Result ConvertResult(HAL_StatusTypeDef hal_result);
+
+    // *************************************************************************
+    // ***   Private: Constructors and assign operator - prevent copying   *****
+    // *************************************************************************
+    StHalIic();
+    StHalIic(const StHalIic&);
+    StHalIic& operator=(const StHalIic);
 };
 
 #endif

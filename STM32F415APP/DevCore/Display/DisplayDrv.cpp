@@ -133,18 +133,22 @@ Result DisplayDrv::Loop()
   // Try to take mutex. 1 ms should be enough.
   if(touchscreen_mutex.Lock(1U) == Result::RESULT_OK)
   {
+    // Set prescaler for SPI it display share save SPI with touchscreen
     if(tft_hspi == touch_hspi)
     {
-      // Set prescaler for SPI
       MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_64);
-      // Get touch coordinates
-      tmp_is_touch = touch.GetXY(tmp_tx, tmp_ty);
+    }
+    // Get touch coordinates
+    tmp_is_touch = touch.GetXY(tmp_tx, tmp_ty);
+    // Reset prescaler for SPI it display share save SPI with touchscreen
+    if(tft_hspi == touch_hspi)
+    {
       // Restore prescaler for SPI
       MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_2);
-      // Give semaphore for drawing frame - we can enter in this "if" statement
-      // only if mutex taken
-      touchscreen_mutex.Release();
     }
+    // Give semaphore for drawing frame - we can enter in this "if" statement
+    // only if mutex taken
+    touchscreen_mutex.Release();
   }
   // If touch state changed (move)
   if(is_touch && tmp_is_touch && ((tx != tmp_tx) || (ty != tmp_ty)) )

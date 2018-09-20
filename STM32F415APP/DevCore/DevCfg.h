@@ -54,24 +54,59 @@
 #include "Result.h"
 #include "Rtos.h"
 
+// Include for all hardware stuff
+#include "main.h"
+
+// ***   ADC   *****************************************************************
+#ifdef HAL_ADC_MODULE_ENABLED
 #include "adc.h"
+#else
+typedef uint32_t ADC_HandleTypeDef; // Dummy ADC handle for compilation
+#endif
+// ***   SPI   *****************************************************************
+#ifdef HAL_SPI_MODULE_ENABLED
 #include "spi.h"
+#else
+typedef uint32_t SPI_HandleTypeDef; // Dummy SPI handle for compilation
+#endif
+// ***   I2C   *****************************************************************
+#ifdef HAL_I2C_MODULE_ENABLED
+#include "i2c.h"
+#else
+typedef uint32_t I2C_HandleTypeDef; // Dummy I2C handle for compilation
+#endif
+// ***   TIM   *****************************************************************
+#ifdef HAL_TIM_MODULE_ENABLED
 #include "tim.h"
+#else
+typedef uint32_t TIM_HandleTypeDef; // Dummy TIM handle for compilation
+#endif
+
 #include "usb_device.h"
 
 // *****************************************************************************
 // ***   Configuration   *******************************************************
 // *****************************************************************************
 
-// Display SPI handle
-static SPI_HandleTypeDef* const TFT_HSPI = &hspi1;
-// Touchscreen SPI handle
-static SPI_HandleTypeDef* const TOUCH_HSPI = &hspi1;
-
-// Sound Timer handle
-static TIM_HandleTypeDef* const SOUND_HTIM = &htim4;
-// Sound Timer channel
-static const uint32_t SOUND_CHANNEL = TIM_CHANNEL_2;
+// ***   SPI Handles   *********************************************************
+#ifdef HAL_SPI_MODULE_ENABLED
+  // Display SPI handle
+  static SPI_HandleTypeDef* const TFT_HSPI = &hspi1;
+  // Touchscreen SPI handle
+  static SPI_HandleTypeDef* const TOUCH_HSPI = &hspi1;
+#endif
+// ***   I2C Handles   *********************************************************
+#ifdef HAL_I2C_MODULE_ENABLED
+  // BME280 I2C handle
+  static I2C_HandleTypeDef& BME280_HI2C = hi2c1;
+#endif
+// ***   TIM Handles   *********************************************************
+#ifdef HAL_TIM_MODULE_ENABLED
+  // Sound Timer handle
+  static TIM_HandleTypeDef* const SOUND_HTIM = &htim4;
+  // Sound Timer channel
+  static const uint32_t SOUND_CHANNEL = TIM_CHANNEL_2;
+#endif
 
 // *** Applications tasks stack sizes   ****************************************
 const static uint16_t APPLICATION_TASK_STACK_SIZE = 1024U;

@@ -47,7 +47,9 @@
 									<listOptionValue builtIn="false" value="../DevCore/"/>
 									<listOptionValue builtIn="false" value="../DevCore/Framework"/>
 									<listOptionValue builtIn="false" value="../DevCore/FreeRtosWrapper"/>
+									<listOptionValue builtIn="false" value="../DevCore/Interfaces"/>
 									<listOptionValue builtIn="false" value="../DevCore/Drivers"/>
+									<listOptionValue builtIn="false" value="../DevCore/Libraries"/>
 									<listOptionValue builtIn="false" value="../DevCore/Display"/>
 									<listOptionValue builtIn="false" value="../DevCore/Tasks"/>
 									<listOptionValue builtIn="false" value="../DevCore/UiEngine"/>
@@ -66,7 +68,7 @@
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.682893266" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>
 							</tool>
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1738856728" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option id="gnu.cpp.compiler.option.optimization.level.1446551258" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.more" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.optimization.level.1446551258" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="fr.ac6.managedbuild.gnu.cpp.optimization.level.more" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.1335803084" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1860981218" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Inc"/>
@@ -83,7 +85,9 @@
 									<listOptionValue builtIn="false" value="../DevCore/"/>
 									<listOptionValue builtIn="false" value="../DevCore/Framework"/>
 									<listOptionValue builtIn="false" value="../DevCore/FreeRtosWrapper"/>
+									<listOptionValue builtIn="false" value="../DevCore/Interfaces"/>
 									<listOptionValue builtIn="false" value="../DevCore/Drivers"/>
+									<listOptionValue builtIn="false" value="../DevCore/Libraries"/>
 									<listOptionValue builtIn="false" value="../DevCore/Display"/>
 									<listOptionValue builtIn="false" value="../DevCore/Tasks"/>
 									<listOptionValue builtIn="false" value="../DevCore/UiEngine"/>
@@ -125,6 +129,31 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.316817976.426619972" name="/" resourcePath="DevCore">
+						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.338144161" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug" unusedChildren="">
+							<option id="fr.ac6.managedbuild.option.gnu.cross.prefix.596093250.386937554" name="Prefix" superClass="fr.ac6.managedbuild.option.gnu.cross.prefix.596093250"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.137940833.1345160168" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu.137940833"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1386374875.938007310" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board.1386374875"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.instructionSet.653372639.1706570434" name="Instruction Set" superClass="fr.ac6.managedbuild.option.gnu.cross.instructionSet.653372639"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.fpu.715560000.1505047962" name="Floating point hardware" superClass="fr.ac6.managedbuild.option.gnu.cross.fpu.715560000"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.floatabi.224923540.1436221729" name="Floating-point ABI" superClass="fr.ac6.managedbuild.option.gnu.cross.floatabi.224923540"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.587456861" name="MCU GCC Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.83598944"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.625175470" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1738856728"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.617255926" name="MCU GCC Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker.433495544"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker.855553111" name="MCU G++ Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker.584977711"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.archiver.2104881552" name="MCU GCC Archiver" superClass="fr.ac6.managedbuild.tool.gnu.archiver.925582677"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.assembler.699425738" name="MCU GCC Assembler" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.1204646521"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevCore"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -239,11 +268,13 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevCore/Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevCore/Libraries"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

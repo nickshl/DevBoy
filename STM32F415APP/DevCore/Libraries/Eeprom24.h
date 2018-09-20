@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file UiMenu.h
+//  @file Eeprom24.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: UI Menu Class, header
+//  @details DevCore: EEPROM 24C*** driver, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,113 +45,63 @@
 //
 //******************************************************************************
 
-#ifndef UiMenu_h
-#define UiMenu_h
+#ifndef Eeprom24_h
+#define Eeprom24_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "DisplayDrv.h"
-#include "InputDrv.h"
-#include "SoundDrv.h"
-#include "UiEngine.h"
+#include "IIic.h"
 
 // *****************************************************************************
-// ***   Menu Class   **********************************************************
+// ***   EEPROM 24C*** Driver Class   ******************************************
 // *****************************************************************************
-class UiMenu
+class Eeprom24
 {
   public:
     // *************************************************************************
-    // ***   Menu Item description structure   *********************************
-    // *************************************************************************
-    typedef struct typeMenuItem
-    {
-        const char* str;                             // Menu Item caption
-        void (*Callback)(void* ptr, uint32_t param); // Callback for menu item enter
-        char* (*GetStr) (void* ptr, char* buf, uint32_t n, uint32_t add_param); // Callback for string generation
-        void* ptr;                             // Pointer for callbacks(pointer to object)
-        uint32_t add_param;                    // Additional params for callbacks
-    } MenuItem;
-
-    // *************************************************************************
     // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    UiMenu(const char* header_str_in, MenuItem* items_in, int32_t items_cnt_in,
-           int32_t current_pos_in = 0,
-           String::FontType header_font_in = String::FONT_12x16,
-           String::FontType items_font_in = String::FONT_8x12,
-           int16_t x = 0, int16_t y = 0, int16_t w = 0, int16_t h = 0);
+    explicit Eeprom24(IIic& iic_ref) : iic(iic_ref) {};
 
     // *************************************************************************
-    // ***   Public: Run menu   ************************************************
+    // ***   Public: Init   ****************************************************
     // *************************************************************************
-    bool Run(void);
+    Result Init();
 
     // *************************************************************************
-    // ***   Public: GetCurrentPosition   **************************************
+    // ***   Public: Read   ****************************************************
     // *************************************************************************
-    inline int32_t GetCurrentPosition(void) {return current_pos;};
-      
+    Result Read(uint16_t addr, uint8_t* rx_buf_ptr, uint16_t size);
+
+    // *************************************************************************
+    // ***   Public: Write   ***************************************************
+    // *************************************************************************
+    Result Write(uint16_t addr, uint8_t* tx_buf_ptr, uint16_t size);
+
   private:
-    // Max allowed menu items on the screen
-    static const uint32_t MAX_MENU_ITEMS = 16U;
+    // Chip address
+    static const uint8_t I2C_ADDR = 0x50U;
 
-    const char* header_str;       // Menu header
-    String::FontType header_font; // Header font
-    MenuItem* items;              // Pointer to Items array
-    int32_t items_cnt;            // Items count
-    int32_t current_pos;          // Current position
-    String::FontType items_font;  // Menu items font
-    int16_t x_start;
-    int16_t y_start;
-    int16_t width;
-    int16_t height;
-    
-    // Box across menu
-    Box box;
-    // Header String object
-    String hdr_str;
-    // Header line
-    Line hdr_line;
-    // Box for selected item
-    Box selection_bar;
-    // Scroll
-    UiScroll scroll;
-    
-    // Variables for user input
-    bool kbd_up = false;
-    bool kbd_right = false;
-    bool kbd_down = false;
-    bool kbd_left = false;
-    // Last buttons values
-    bool up_btn_val = false;
-    bool right_btn_val = false;
-    bool down_btn_val = false;
-    bool left_btn_val = false;
-    // Last encoders & buttons values
-    int32_t last_enc_left_val = 0;
-    int32_t last_enc_right_val = 0;
-    bool enc1_btn_left_val = false;
-    bool enc2_btn_left_val = false;
-    
-    // Display driver instance
-    DisplayDrv& display_drv = DisplayDrv::GetInstance();
-    // Input driver instance
-    InputDrv& input_drv = InputDrv::GetInstance();
-    // Sound driver instance
-    SoundDrv& sound_drv = SoundDrv::GetInstance();
+    // Page size in bytes
+    static const uint8_t PAGE_SIZE_BYTES = 64U;
+
+    // Writing timeout in ms
+    static const uint8_t WRITING_TIMEOUT_MS = 10U;
+
+    // Repetition counter for tracking timeout
+    uint8_t repetition_cnt = 0U;
+
+    // Reference to the I2C handle
+    IIic& iic;
 
     // *************************************************************************
-    // ***   Private: Init user input   ****************************************
+    // ***   Private: Constructors and assign operator - prevent copying   *****
     // *************************************************************************
-    void InitUserInput(void);
-
-    // *************************************************************************
-    // ***   Private: Process user input   *************************************
-    // *************************************************************************
-    void ProcessUserInput(void);
+    Eeprom24();
+    Eeprom24(const Eeprom24&);
+    Eeprom24& operator=(const Eeprom24);
 };
 
-#endif // UiMenu_h
+#endif

@@ -30,6 +30,10 @@
 #include "fatfs.h"
 #include "usbd_cdc.h"
 
+#include "StHalIic.h"
+#include "BoschBME280.h"
+//#include "Eeprom24.h"
+
 // *****************************************************************************
 // ***   Get Instance   ********************************************************
 // *****************************************************************************
@@ -54,11 +58,15 @@ char* Application::GetMenuStr(void* ptr, char* buf, uint32_t n, uint32_t add_par
 // *****************************************************************************
 Result Application::Loop()
 {
+  Result result;
+
+  StHalIic iic(BME280_HI2C);
+
   // Sound control on the touchscreen
   SoundControlBox snd_box(0, 0);
   snd_box.Move(display_drv.GetScreenW() - snd_box.GetWidth(), display_drv.GetScreenH() - snd_box.GetHeight());
   snd_box.Show(32768);
-    
+
   // ***   Menu Items   ********************************************************
   UiMenu::MenuItem main_menu_items[] =
   {{"Tetris",          nullptr, &Application::GetMenuStr, this, 1},
@@ -70,7 +78,8 @@ Result Application::Loop()
    {"SD write test",   nullptr, &Application::GetMenuStr, this, 7},
    {"USB test",        nullptr, &Application::GetMenuStr, this, 8},
    {"Servo test",      nullptr, &Application::GetMenuStr, this, 9},
-   {"Touch calibrate", nullptr, &Application::GetMenuStr, this, 10}};
+   {"Touch calibrate", nullptr, &Application::GetMenuStr, this, 10},
+   {"I2C Ping",        nullptr, &Application::GetMenuStr, this, 11}};
 
   // Create menu object
   UiMenu menu("Main Menu", main_menu_items, NumberOf(main_menu_items));
@@ -201,6 +210,10 @@ Result Application::Loop()
         case 9:
           display_drv.TouchCalibrate();
           break;
+
+        case 10:
+          IicPing(iic);
+          break;
          
         default:
           break;
@@ -209,6 +222,102 @@ Result Application::Loop()
   }
 
   // Always run
+  return Result::RESULT_OK;
+}
+
+// *****************************************************************************
+// ***   IicPing   *************************************************************
+// *****************************************************************************
+Result Application::IicPing(IIic& iic)
+{
+  // Set error by default for initialize sensor first time
+  Result result = Result::ERR_I2C_UNKNOWN;
+
+  // Strings
+  String str_arr[2+8+1];
+  // Buffer for strings
+  static char str_buf[8+1][64] = {0};
+
+  // Header
+  str_arr[8].SetParams("  | x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF", 0U, 0, COLOR_WHITE, String::FONT_6x8);
+  str_arr[9].SetParams("---------------------------------------------------", 0U, 8, COLOR_WHITE, String::FONT_6x8);
+  // Sensor data
+  str_arr[10U].SetParams(str_buf[8U], 0U, 8 * (2+10), COLOR_WHITE, String::FONT_8x12);
+  // Show strings
+  for(uint32_t i = 0U; i < NumberOf(str_arr); i++)
+  {
+    // Set params for
+    if(i < 8U)
+    {
+      // Set result string
+      str_arr[i].SetParams(str_buf[i], 0U, 8 * (2+i), COLOR_WHITE, String::FONT_6x8);
+    }
+    str_arr[i].Show(10000);
+  }
+
+  // TODO: test code below works, but by some reason break
+  // BME280 communication. Use Logic Analyzer to figureout
+  // what happens.
+//  Eeprom24 eeprom(iic);
+//  eeprom.Init();
+//  uint8_t buf_out[] = "Test!!!";
+//  result = eeprom.Write(0U, buf_out, sizeof(buf_out));
+//  uint8_t buf_in[16] = {0};
+//  result |= eeprom.Read(0U, buf_in, sizeof(buf_in));
+
+  // Sensor object
+  BoschBME280 bmp280(iic);
+
+  // Loop until user press "Left"
+  while(input_drv.GetButtonState(InputDrv::EXT_LEFT, InputDrv::BTN_LEFT) == false)
+  {
+    // Ping all I2C adresses
+    for(uint32_t i = 0U; i < 8U; i++)
+    {
+      // Entry
+      sprintf(str_buf[i], "%Xx|", (unsigned int)i);
+      // Set pointer to empty space
+      char* str_ptr = str_buf[i] + 3U;
+      // 16 addresses ping
+      for(uint32_t j = 0U; j < 16U; j++)
+      {
+        // Ping device
+        Result res = iic.IsDeviceReady((i << 4) | j, 3);
+        // Check result
+        if(res == Result::RESULT_OK)
+        {
+          sprintf(str_ptr, " %02X", (unsigned int)((i << 4) | j)); // Received an ACK at that address
+        }
+        else
+        {
+          sprintf(str_ptr, " --"); // No ACK received at that address
+        }
+        str_ptr += 3U;
+      }
+    }
+
+    // Reinitialize sensor
+    if(result.IsBad())
+    {
+      result = bmp280.Initialize();
+      result |= bmp280.SetSampling(BoschBME280::MODE_FORCED);
+    }
+    // Take measurement
+    result |= bmp280.TakeMeasurement();
+    // Get values
+    int32_t temp = bmp280.GetTemperature_x100();
+    int32_t press = bmp280.GetPressure_x256() / 256;
+    int32_t humid = (bmp280.GetHumidity_x1024() * 100) / 1024;
+    // Generate string
+    sprintf(str_buf[8U], "T=%ld.%02ldC P=%ldPa H=%ld.%02ld%% %s", temp/100, abs(temp%100), press, humid/100, abs(humid%100), result.IsGood() ? "" : "ERROR"); // Received an ACK at that address
+
+    // Update display
+    display_drv.UpdateDisplay();
+    // Wait
+    RtosTick::DelayMs(100U);
+  }
+
+  // Always Ok
   return Result::RESULT_OK;
 }
 
