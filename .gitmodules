@@ -1,0 +1,3 @@
+[submodule "STM32F415APP/DevCore"]
+	path = STM32F415APP/DevCore
+	url = https://github.com/nickshl/DevCore.git
