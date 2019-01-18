@@ -62,7 +62,7 @@ bool Rtos::IsInHandlerMode(void)
 // *****************************************************************************
 void Rtos::SuspendScheduler()
 {
-   vTaskSuspendAll();
+  vTaskSuspendAll();
 }
 
 // *****************************************************************************
@@ -70,9 +70,7 @@ void Rtos::SuspendScheduler()
 // *****************************************************************************
 void Rtos::ResumeScheduler()
 {
-   // Discard return value, since the destructor can't do anything with it
-   // and it's unlikely to be used.
-   (void) xTaskResumeAll();
+  (void) xTaskResumeAll();
 }
 
 // *****************************************************************************
@@ -80,7 +78,7 @@ void Rtos::ResumeScheduler()
 // *****************************************************************************
 void Rtos::EnterCriticalSection()
 {
-   taskENTER_CRITICAL();
+  taskENTER_CRITICAL();
 }
 
 // *****************************************************************************
@@ -88,7 +86,7 @@ void Rtos::EnterCriticalSection()
 // *****************************************************************************
 void Rtos::ExitCriticalSection()
 {
-   taskEXIT_CRITICAL();
+  taskEXIT_CRITICAL();
 }
 
 // *****************************************************************************
@@ -96,7 +94,7 @@ void Rtos::ExitCriticalSection()
 // *****************************************************************************
 void Rtos::DisableInterrupts()
 {
-   taskDISABLE_INTERRUPTS();
+  taskDISABLE_INTERRUPTS();
 }
 
 // *****************************************************************************
@@ -104,5 +102,5 @@ void Rtos::DisableInterrupts()
 // *****************************************************************************
 void Rtos::EnableInterrupts()
 {
-   taskENABLE_INTERRUPTS();
+  taskENABLE_INTERRUPTS();
 }

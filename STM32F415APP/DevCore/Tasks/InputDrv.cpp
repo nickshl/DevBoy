@@ -381,6 +381,13 @@ bool InputDrv::GetButtonState(PortType port, ButtonType button, bool& btn_state)
   return ret;
 }
 
+// *****************************************************************************
+// ***   Get encoder counts from last call - CAN BE CALLED FROM ONE TASK   *****
+// *****************************************************************************
+int32_t InputDrv::GetEncoderState(PortType port)
+{
+  return GetEncoderState(port, last_enc_value[port]);
+}
 
 // *****************************************************************************
 // ***   Get encoder counts from last call   ***********************************
@@ -400,10 +407,18 @@ int32_t InputDrv::GetEncoderState(PortType port, int32_t& last_enc_val)
 // *****************************************************************************
 // ***   Get encoder button state   ********************************************
 // *****************************************************************************
-bool InputDrv::GetEncoderButtonState(PortType port, EncButtonType button)
+bool InputDrv::GetEncoderButtonCurrentState(PortType port, EncButtonType button)
 {
   // Return current state of button
   return encoders[port].btn[button].btn_state;
+}
+
+// *****************************************************************************
+// ***   Get encoder button state   ********************************************
+// *****************************************************************************
+bool InputDrv::GetEncoderButtonState(PortType port, EncButtonType button)
+{
+  return GetEncoderButtonState(port, button, enc_btn_value[port][button]);
 }
 
 // *****************************************************************************
@@ -528,30 +543,38 @@ InputDrv::ExtDeviceType InputDrv::DetectDeviceType(PortType port)
   // Variable to store Y axis value
   int32_t y_val;
 
-  // Config ADC for measure
-  if(port == EXT_LEFT)  ConfigADC(EXT_DEV_JOY,  EXT_DEV_NONE);
-  if(port == EXT_RIGHT) ConfigADC(EXT_DEV_NONE, EXT_DEV_JOY);
-  // Start measurement
-  HAL_ADCEx_InjectedStart(hadc);
-  // Wait until End of Conversion flag is raised
-  while(HAL_IS_BIT_CLR(hadc->Instance->SR, ADC_FLAG_JEOC));
-  x_val = HAL_ADCEx_InjectedGetValue(hadc, (port << 1) + 1);
-  y_val = HAL_ADCEx_InjectedGetValue(hadc, (port << 1) + 2);
-
-  // Center values
-  x_val -= ADC_MAX_VAL/2;
-  y_val -= ADC_MAX_VAL/2;
-  // If at least one value near center
-  if(   ((x_val > -JOY_THRESHOLD) && (x_val < JOY_THRESHOLD))
-     || ((y_val > -JOY_THRESHOLD) && (y_val < JOY_THRESHOLD)))
+  if(hadc != nullptr)
   {
-    // Joystick connected
-    ret = EXT_DEV_JOY;
+    // Config ADC for measure
+    if(port == EXT_LEFT)  ConfigADC(EXT_DEV_JOY,  EXT_DEV_NONE);
+    if(port == EXT_RIGHT) ConfigADC(EXT_DEV_NONE, EXT_DEV_JOY);
+    // Start measurement
+    HAL_ADCEx_InjectedStart(hadc);
+    // Wait until End of Conversion flag is raised
+    while(HAL_IS_BIT_CLR(hadc->Instance->SR, ADC_FLAG_JEOC));
+    x_val = HAL_ADCEx_InjectedGetValue(hadc, (port << 1) + 1);
+    y_val = HAL_ADCEx_InjectedGetValue(hadc, (port << 1) + 2);
+
+    // Center values
+    x_val -= ADC_MAX_VAL/2;
+    y_val -= ADC_MAX_VAL/2;
+    // If at least one value near center
+    if(   ((x_val > -JOY_THRESHOLD) && (x_val < JOY_THRESHOLD))
+       || ((y_val > -JOY_THRESHOLD) && (y_val < JOY_THRESHOLD)))
+    {
+      // Joystick connected
+      ret = EXT_DEV_JOY;
+    }
+    else
+    {
+      // Stop ADC before switch to digital inputs
+      HAL_ADCEx_InjectedStop(hadc);
+      // Config input IO to digital
+      ConfigInputIO(true, port);
+    }
   }
   else
   {
-    // Stop ADC before switch to digital inputs
-    HAL_ADCEx_InjectedStop(hadc);
     // Config input IO to digital
     ConfigInputIO(true, port);
   }

@@ -56,6 +56,7 @@
 
 // Include for all hardware stuff
 #include "main.h"
+#include "stm32f4xx.h"
 
 // ***   ADC   *****************************************************************
 #ifdef HAL_ADC_MODULE_ENABLED
@@ -80,6 +81,12 @@ typedef uint32_t I2C_HandleTypeDef; // Dummy I2C handle for compilation
 #include "tim.h"
 #else
 typedef uint32_t TIM_HandleTypeDef; // Dummy TIM handle for compilation
+#endif
+// ***   DAC   *****************************************************************
+#ifdef HAL_DAC_MODULE_ENABLED
+#include "dac.h"
+#else
+typedef uint32_t DAC_HandleTypeDef; // Dummy DAC handle for compilation
 #endif
 
 #include "usb_device.h"

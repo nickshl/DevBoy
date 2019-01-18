@@ -29,7 +29,7 @@
 // *****************************************************************************
 // ***   Constructor   *********************************************************
 // *****************************************************************************
-Image::Image(int32_t x, int32_t y, const ImageDesc& img_dsc) : img_description(img_dsc)
+Image::Image(int32_t x, int32_t y, const ImageDesc& img_dsc)
 {
   x_start = x;
   y_start = y;

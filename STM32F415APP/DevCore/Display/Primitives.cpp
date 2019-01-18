@@ -31,7 +31,7 @@
 // *****************************************************************************
 // ***   Constructor   *********************************************************
 // *****************************************************************************
-Box::Box(int32_t x, int32_t y, int32_t w, int32_t h, int32_t c, bool is_fill)
+Box::Box(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c, bool is_fill)
 {
   SetParams(x, y, w, h, c, is_fill);
 }
@@ -39,7 +39,7 @@ Box::Box(int32_t x, int32_t y, int32_t w, int32_t h, int32_t c, bool is_fill)
 // *****************************************************************************
 // ***   SetParams   ***********************************************************
 // *****************************************************************************
-void Box::SetParams(int32_t x, int32_t y, int32_t w, int32_t h, int32_t c, bool is_fill)
+void Box::SetParams(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c, bool is_fill)
 {
   color = c;
   x_start = x;

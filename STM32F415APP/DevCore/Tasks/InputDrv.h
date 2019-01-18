@@ -160,6 +160,11 @@ class InputDrv : public AppTask
     bool GetButtonState(PortType port, ButtonType button, bool& btn_state);
 
     // *************************************************************************
+    // ***   Get encoder counts from last call - CAN BE CALLED FROM ONE TASK   *
+    // *************************************************************************
+    int32_t GetEncoderState(PortType port);
+
+    // *************************************************************************
     // ***   Get encoder counts from last call   *******************************
     // *************************************************************************
     // * Return state of encoder. Class counts encoder clicks and stored inside.
@@ -172,12 +177,18 @@ class InputDrv : public AppTask
     // ***   Get button state   ************************************************
     // *************************************************************************
     // Return button state: true - pressed, false - unpressed
+    bool GetEncoderButtonCurrentState(PortType port, EncButtonType button);
+
+    // *************************************************************************
+    // ***   Get encoder button state - CAN BE CALLED FROM ONE TASK   **********
+    // *************************************************************************
+    // Return button state: true - state changed, false - state remain
     bool GetEncoderButtonState(PortType port, EncButtonType button);
 
     // *************************************************************************
     // ***   Get encoder button state   ****************************************
     // *************************************************************************
-    // Return button state: true - pressed, false - unpressed
+    // Return button state: true - state changed, false - state remain
     bool GetEncoderButtonState(PortType port, EncButtonType button, bool& btn_state);
 
     // *************************************************************************
@@ -345,6 +356,14 @@ class InputDrv : public AppTask
     TIM_HandleTypeDef* htim = nullptr;
     // Handle to timer used for process encoders input
     ADC_HandleTypeDef* hadc = nullptr;
+
+    // *************************************************************************
+    // ***   Last value for reduce overhead in user task   *********************
+    // *************************************************************************
+    // Encoder values
+    int32_t last_enc_value[EXT_MAX] = {0};
+    // Encoder button states
+    bool enc_btn_value[EXT_MAX][ENC_BTN_MAX] = {0};
 
     // *************************************************************************
     // ***   Process Button Input function   ***********************************

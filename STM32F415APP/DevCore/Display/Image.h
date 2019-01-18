@@ -84,13 +84,18 @@ class Image : public VisObject
     // *************************************************************************
     // ***   Constructor   *****************************************************
     // *************************************************************************
+    Image() {};
+
+    // *************************************************************************
+    // ***   Constructor   *****************************************************
+    // *************************************************************************
     Image(int32_t x, int32_t y, const ImageDesc& img_dsc);
 
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
     virtual void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t y = 0);
-    
+
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
@@ -100,25 +105,23 @@ class Image : public VisObject
     // ***   Set Horizontal Flip function   ************************************
     // *************************************************************************
     void SetHorizontalFlip(bool flip) {hor_mirror = flip;}
-    
+
     // *************************************************************************
     // ***   Set Image function   **********************************************
     // *************************************************************************
     void SetImage(const ImageDesc& img_dsc, bool semaphore_taken = false);
 
   protected:
-    // Reference to image description structure
-    const ImageDesc& img_description;
     // Bits per pixel
-    uint8_t bits_per_pixel;
+    uint8_t bits_per_pixel = 0U;
     // Pointer to the image
-    const void* img;
+    const void* img = nullptr;
     // Pointer to the palette
-    const uint16_t* palette;
+    const uint16_t* palette = nullptr;
     // Transparent color (-1 no transparent colors)
-    int32_t transparent_color;
+    int32_t transparent_color = -1;
     // Horizontal mirror
-    bool hor_mirror;
+    bool hor_mirror = false;
 };
 
 // *****************************************************************************

@@ -66,8 +66,6 @@ class Tetris : public AppTask
     // Round flag
     bool round = true;
 
-    // Button states
-    bool btn_states[InputDrv::BTN_MAX] = {false};
     // Last left encoder value
     int32_t last_enc1_val = 0;
     // Last right encoder value

@@ -1,18 +1,19 @@
 //******************************************************************************
-//  @file Primitives.h
+//  @file StHalSpi.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: Primitives Visual Object Classes(Box, Line, Circle), header
+//  @details DevCore: STM32 HAL SPI driver, header
 //
 //  @section LICENSE
 //
-//   Software License Agreement (BSD License)
+//   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
 //   modification, are permitted provided that the following conditions are met:
+//
 //   1. Redistributions of source code must retain the above copyright
 //      notice, this list of conditions and the following disclaimer.
 //   2. Redistributions in binary form must reproduce the above copyright
@@ -21,6 +22,9 @@
 //   3. Neither the name of the Devtronic nor the names of its contributors
 //      may be used to endorse or promote products derived from this software
 //      without specific prior written permission.
+//   4. Redistribution and use of this software other than as permitted under
+//      this license is void and will automatically terminate your rights under
+//      this license.
 //
 //   THIS SOFTWARE IS PROVIDED BY DEVTRONIC ''AS IS'' AND ANY EXPRESS OR IMPLIED
 //   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -33,129 +37,126 @@
 //   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+//  @section SUPPORT
+//
+//   Devtronic invests time and resources providing this open source code,
+//   please support Devtronic and open-source hardware/software by
+//   donations and/or purchasing products from Devtronic.
+//
 //******************************************************************************
 
-#ifndef Primitives_h
-#define Primitives_h
+#ifndef StmHalSpi_h
+#define StmHalSpi_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "VisObject.h"
+#include "ISpi.h"
 
 // *****************************************************************************
-// ***   Box Class   ***********************************************************
+// ***   This driver can be compiled only if UART configured in CubeMX   *******
 // *****************************************************************************
-class Box : public VisObject
+#ifndef HAL_SPI_MODULE_ENABLED
+  typedef uint32_t SPI_HandleTypeDef; // Dummy SPI handle for header compilation
+#endif
+
+// *****************************************************************************
+// ***   STM32 HAL ISPI  Driver Class   ****************************************
+// *****************************************************************************
+class StHalSpi : public ISpi
 {
   public:
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    Box() {};
+    explicit StHalSpi(SPI_HandleTypeDef& hspi_ref) : hspi(hspi_ref) {};
 
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: Destructor   **********************************************
     // *************************************************************************
-    Box(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c, bool is_fill = false);
+    ~StHalSpi() {};
 
     // *************************************************************************
-    // ***   SetParams   *******************************************************
+    // ***   Public: Init   ****************************************************
     // *************************************************************************
-    void SetParams(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t c, bool is_fill = false);
+    virtual Result Init() {return Result::RESULT_OK;}
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: DeInit   **************************************************
     // *************************************************************************
-    virtual void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t y = 0);
-    
-    // *************************************************************************
-    // ***   Put line in buffer   **********************************************
-    // *************************************************************************
-    virtual void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t x = 0);
-    
-  private:
-    // Box color
-    uint16_t color = 0U;
-    // Is box fill ?
-    bool fill = false;
-};
-
-// *****************************************************************************
-// ***   Line Class   **********************************************************
-// *****************************************************************************
-class Line : public VisObject
-{
-  public:
-    // *************************************************************************
-    // ***   Constructor   *****************************************************
-    // *************************************************************************
-    Line() {};
+    virtual Result DeInit() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: Transfer   ************************************************
     // *************************************************************************
-    Line(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t c);
+    virtual Result Transfer(uint8_t* rx_buf_ptr, uint8_t* tx_buf_ptr, uint32_t size);
 
     // *************************************************************************
-    // ***   SetParams   *******************************************************
+    // ***   Public: Write   ***************************************************
     // *************************************************************************
-    void SetParams(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t c);
+    virtual Result Write(uint8_t* tx_buf_ptr, uint32_t tx_size);
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: Read   ****************************************************
     // *************************************************************************
-    virtual void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t y = 0);
-    
-    // *************************************************************************
-    // ***   Put line in buffer   **********************************************
-    // *************************************************************************
-    virtual void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t x = 0);
-    
-  private:
-    // Line color
-    uint16_t color = 0U;
-};
-
-// *****************************************************************************
-// ***   Circle Class   ********************************************************
-// *****************************************************************************
-class Circle : public VisObject
-{
-  public:
-    // *************************************************************************
-    // ***   Constructor   *****************************************************
-    // *************************************************************************
-    Circle() {};
+    virtual Result Read(uint8_t* rx_buf_ptr, uint32_t rx_size);
 
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: TransferAsync   *******************************************
     // *************************************************************************
-    Circle(int32_t x, int32_t y, int32_t r, int32_t c, bool is_fill = false);
+    virtual Result TransferAsync(uint8_t* rx_buf_ptr, uint8_t* tx_buf_ptr, uint32_t size);
 
     // *************************************************************************
-    // ***   SetParams   **************************************II***************
+    // ***   Public: WriteAsync   **********************************************
     // *************************************************************************
-    void SetParams(int32_t x, int32_t y, int32_t r, int32_t c, bool is_fill = false);
+    virtual Result WriteAsync(uint8_t* tx_buf_ptr, uint32_t tx_size);
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: ReadAsync   ***********************************************
     // *************************************************************************
-    virtual void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t y = 0);
+    virtual Result ReadAsync(uint8_t* rx_buf_ptr, uint32_t rx_size);
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: Check SPI transfer status   *******************************
     // *************************************************************************
-    virtual void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t x = 0);
+    virtual bool IsTransferComplete(void);
+
+    // *************************************************************************
+    // ***   Public: Abort   ***************************************************
+    // *************************************************************************
+    virtual Result Abort(void);
+
+    // *************************************************************************
+    // ***   Public: SetSpeed   ************************************************
+    // *************************************************************************
+    virtual Result SetSpeed(uint32_t clock_rate);
+
+    // *************************************************************************
+    // ***   Public: GetSpeed   ************************************************
+    // *************************************************************************
+    virtual Result GetSpeed(uint32_t& clock_rate);
 
   private:
-    // Circle color
-    uint16_t color = 0U;
-    // Circle radius
-    int16_t radius = 0;
-    // Is box fill ?
-    bool fill = false;
+    // Reference to the SPI handle
+    SPI_HandleTypeDef& hspi;
+
+    // *************************************************************************
+    // ***   Private: GetToDataSizeBytes   *************************************
+    // *************************************************************************
+    uint32_t GetToDataSizeBytes();
+
+    // *************************************************************************
+    // ***   Private: ConvertResult   ******************************************
+    // *************************************************************************
+    Result ConvertResult(HAL_StatusTypeDef hal_result);
+
+    // *************************************************************************
+    // ***   Private: Constructors and assign operator - prevent copying   *****
+    // *************************************************************************
+    StHalSpi();
+    StHalSpi(const StHalSpi&);
+    StHalSpi& operator=(const StHalSpi);
 };
 
 #endif

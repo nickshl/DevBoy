@@ -1,14 +1,14 @@
 //******************************************************************************
-//  @file UiButton.h
+//  @file IUart.h
 //  @author Nicolai Shlapunov
 //
-//  @details DevCore: UI Button Visual Object Class, header
+//  @details DevCore: UART driver interface, header
 //
 //  @section LICENSE
 //
 //   Software License Agreement (Modified BSD License)
 //
-//   Copyright (c) 2016, Devtronic & Nicolai Shlapunov
+//   Copyright (c) 2018, Devtronic & Nicolai Shlapunov
 //   All rights reserved.
 //
 //   Redistribution and use in source and binary forms, with or without
@@ -45,80 +45,60 @@
 //
 //******************************************************************************
 
-#ifndef UiButton_h
-#define UiButton_h
+#ifndef IUart_h
+#define IUart_h
 
 // *****************************************************************************
 // ***   Includes   ************************************************************
 // *****************************************************************************
 #include "DevCfg.h"
-#include "DisplayDrv.h"
-#include "VisObject.h"
 
 // *****************************************************************************
-// ***   Button Class   ********************************************************
+// ***   UART Driver Interface   ***********************************************
 // *****************************************************************************
-class UiButton : public VisObject
+class IUart
 {
   public:
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    UiButton() {};
+    explicit IUart() {};
 
     // *************************************************************************
-    // ***   Constructor   *****************************************************
+    // ***   Public: Destructor   **********************************************
     // *************************************************************************
-    UiButton(const char* str_in, int32_t x, int32_t y, int32_t w, int32_t h,
-             bool is_active = false);
+    virtual ~IUart() {};
 
     // *************************************************************************
-    // ***   SetParams   *******************************************************
+    // ***   Public: Init   ****************************************************
     // *************************************************************************
-    void SetParams(const char* str_in, int32_t x, int32_t y, int32_t w, int32_t h,
-                   bool is_active = false);
+    virtual Result Init() = 0;
 
     // *************************************************************************
-    // ***   Set callback function   *******************************************
+    // ***   Public: DeInit   **************************************************
     // *************************************************************************
-    void SetCallback(void (*clbk)(void* ptr, void* param_ptr, uint32_t param),
-                     void* clbk_ptr, void* clbk_param_ptr, uint32_t clbk_param);
+    virtual Result DeInit() {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   SetActive   *******************************************************
+    // ***   Public: Read   ****************************************************
     // *************************************************************************
-    void SetActive(bool is_active) {active = is_active;}
+    virtual Result Read(uint8_t* rx_buf_ptr, uint32_t& size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: Write   ***************************************************
     // *************************************************************************
-    virtual void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t y = 0);
+    virtual Result Write(uint8_t* tx_buf_ptr, uint32_t size) {return Result::ERR_NOT_IMPLEMENTED;}
 
     // *************************************************************************
-    // ***   Put line in buffer   **********************************************
+    // ***   Public: Constructor   *********************************************
     // *************************************************************************
-    virtual void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t x = 0);
-
-    // *************************************************************************
-    // ***   Put line in buffer   **********************************************
-    // *************************************************************************
-    virtual void Action(VisObject::ActionType action, int32_t tx, int32_t ty);
+  virtual bool IsTxComplete(void) {return true;}
 
   private:
-    // Callback function pointer
-    void (*callback)(void* ptr, void* param_ptr, uint32_t param) = nullptr;
-    // Pointer to something(usually object)
-    void* ptr = nullptr;
-    // Callback parameter pointer
-    void* param_ptr = nullptr;
-    // Callback parameter
-    uint32_t param = 0U;
-    // String pointer
-    const char* str = nullptr;
-    // Box for button
-    Box box;
-    // String for button
-    String string;
+    // *************************************************************************
+    // ***   Private: Constructors and assign operator - prevent copying   *****
+    // *************************************************************************
+    IUart(const IUart&);
 };
 
-#endif // UiButton_h
+#endif

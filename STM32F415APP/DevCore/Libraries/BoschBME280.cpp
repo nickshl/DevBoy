@@ -23,9 +23,12 @@
 // *****************************************************************************
 // ***   Initialize   **********************************************************
 // *****************************************************************************
-Result BoschBME280::Initialize()
+Result BoschBME280::Initialize(uint8_t addr)
 {
   Result result = Result::RESULT_OK;
+
+  // Save I2C sensor address
+  i2c_addr = addr;
 
   result = iic.Enable();
 
@@ -104,7 +107,7 @@ Result BoschBME280::SetSampling(SensorModeType      mode,
   // otherwise the values will not be applied (see datasheet 5.4.3)
   ctrl_hum_reg.reserved = 0U;
   ctrl_hum_reg.osrs_h   = humidity_sampling;
-  result = Write8(BME280_REGISTER_CONTROLHUMID, reinterpret_cast<uint8_t const&>(ctrl_hum_reg));
+  result |= Write8(BME280_REGISTER_CONTROLHUMID, reinterpret_cast<uint8_t const&>(ctrl_hum_reg));
 
   ctrl_meas_reg.mode   = mode;
   ctrl_meas_reg.osrs_t = temperature_sampling;
@@ -160,7 +163,7 @@ Result BoschBME280::TakeMeasurement()
       // Humidity
       adc_humidity = 0;
       result |= ReverseArray((uint8_t*)&adc_humidity, &array[3U+3U], 2U);
-      // Ñalculating t_fine for calculation Pressure & Humidity
+      // Calculate t_fine for calculation Pressure & Humidity
       (void) GetTemperature_x100();
     }
   }
@@ -320,6 +323,17 @@ Result BoschBME280::IsReadingCalibration(void)
 }
 
 // ******************************************************************************
+// ***   Write register value(8-bit)   ******************************************
+// ******************************************************************************
+Result BoschBME280::Write8(uint8_t reg, uint8_t value)
+{
+  uint8_t buf[2];
+  buf[0] = reg;
+  buf[1] = value;
+  return iic.Write(i2c_addr, buf, sizeof(buf));
+}
+
+// ******************************************************************************
 // ***   Read register value(8-bit unsigned)   **********************************
 // ******************************************************************************
 Result BoschBME280::Read8(uint8_t reg, uint8_t& value)
@@ -333,17 +347,6 @@ Result BoschBME280::Read8(uint8_t reg, uint8_t& value)
 Result BoschBME280::Read8(uint8_t reg, int8_t& value)
 {
   return iic.Transfer(i2c_addr, &reg, sizeof(reg), (uint8_t*)&value, sizeof(value));
-}
-
-// ******************************************************************************
-// ***   Write register value(8-bit)   ******************************************
-// ******************************************************************************
-Result BoschBME280::Write8(uint8_t reg, uint8_t value)
-{
-  uint8_t buf[2];
-  buf[0] = reg;
-  buf[1] = value;
-  return iic.Write(i2c_addr, buf, sizeof(buf));
 }
 
 // ******************************************************************************

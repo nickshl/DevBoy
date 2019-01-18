@@ -87,21 +87,40 @@ Result StHalIic::Transfer(uint16_t addr, uint8_t* tx_buf_ptr, uint32_t tx_size, 
 {
   Result result = Result::ERR_NULL_PTR;
 
-  if(tx_buf_ptr != nullptr)
+  // Special hack for use HAL_I2C_Mem_Read() function for send Repeated Start if
+  // tx_size is 1 or 2 bytes.
+  if((tx_buf_ptr != nullptr) && (rx_buf_ptr != nullptr) && ((tx_size == 1U) || (tx_size == 2U)))
   {
-    // Transmit data
-    result = Write(addr, tx_buf_ptr, tx_size);
-  }
+    // Variable for store result from the HAL
+    HAL_StatusTypeDef hal_result = HAL_OK;
 
-  if((rx_buf_ptr != nullptr) && result.IsGood())
+    // Shift address one bit left - HAL blow away LSB, not MSB.
+    addr <<= 1U;
+
+    // Transmit data
+    hal_result = HAL_I2C_Mem_Read(&hi2c, addr, tx_buf_ptr[0], tx_size, rx_buf_ptr, rx_size, i2c_tx_timeout_ms);
+
+    // Convert operation result to Result
+    result = ConvertResult(hal_result);
+  }
+  else
   {
-    // Clear RX buffer
-    for(uint32_t i = 0; i < rx_size; i++)
+    if(tx_buf_ptr != nullptr)
     {
-      rx_buf_ptr[i] = 0;
+      // Transmit data
+      result = Write(addr, tx_buf_ptr, tx_size);
     }
-    // Receive data
-    result = Read(addr, rx_buf_ptr, rx_size);
+
+    if((rx_buf_ptr != nullptr) && result.IsGood())
+    {
+      // Clear RX buffer
+      for(uint32_t i = 0; i < rx_size; i++)
+      {
+        rx_buf_ptr[i] = 0;
+      }
+      // Receive data
+      result = Read(addr, rx_buf_ptr, rx_size);
+    }
   }
 
   return result;

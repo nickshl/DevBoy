@@ -42,12 +42,14 @@ Result DisplayDrv::Setup()
   // If deisplay and touchscreen share same SPI
   if(tft_hspi == touch_hspi)
   {
-     // Set prescaler for SPI
-     MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_64);
-     // Init touchscreen driver
-     touch.Init();
-     // Restore prescaler for SPI
-     MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_2);
+    // Read original SPI prescaler
+    uint32_t prescaler = READ_REG(tft_hspi->Instance->CR1) & SPI_CR1_BR_Msk;
+    // Set prescaler for SPI
+    MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, SPI_BAUDRATEPRESCALER_64);
+    // Init touchscreen driver
+    touch.Init();
+    // Restore prescaler for SPI
+    MODIFY_REG(tft_hspi->Instance->CR1, (uint32_t)SPI_CR1_BR_Msk, prescaler);
   }
   else
   {
@@ -82,48 +84,50 @@ Result DisplayDrv::Loop()
   if(screen_update.Take(100U) == Result::RESULT_OK)
   {
     // Set window for all screen and pointer to first pixel
-    LockDisplay();
-    // Set address window for all screen
-    tft.SetAddrWindow(0, 0, width-1, height-1);
-    // For each line/row
-    for(int32_t i=0; i < height; i++)
+    if(LockDisplay() == Result::RESULT_OK)
     {
-      // Clear half of buffer
-      memset(scr_buf[i%2], 0x00, sizeof(scr_buf[0]));
-      // Take semaphore before draw line
-      line_mutex.Lock();
-      // Set pointer to first element
-      VisObject* p_obj = object_list;
-      // Do for all objects
-      while(p_obj != nullptr)
+      // Set address window for all screen
+      tft.SetAddrWindow(0, 0, width-1, height-1);
+      // For each line/row
+      for(int32_t i=0; i < height; i++)
       {
-        // Draw object to buf
-        if(update_mode) p_obj->DrawInBufH(scr_buf[i%2], width, i);
-        else            p_obj->DrawInBufW(scr_buf[i%2], width, i);
-        // Set pointer to next object in list
-        p_obj = p_obj->p_next;
+        // Clear half of buffer
+        memset(scr_buf[i%2], 0x00, sizeof(scr_buf[0]));
+        // Take semaphore before draw line
+        line_mutex.Lock();
+        // Set pointer to first element
+        VisObject* p_obj = object_list;
+        // Do for all objects
+        while(p_obj != nullptr)
+        {
+          // Draw object to buf
+          if(update_mode) p_obj->DrawInBufH(scr_buf[i%2], width, i);
+          else            p_obj->DrawInBufW(scr_buf[i%2], width, i);
+          // Set pointer to next object in list
+          p_obj = p_obj->p_next;
+        }
+        // Give semaphore after changes
+        line_mutex.Release();
+        // Wait until previous transfer complete
+        while(tft.IsTransferComplete() == false) taskYIELD();
+        // Write stream to LCD
+        tft.SpiWriteStream((uint8_t*)scr_buf[i%2], width*tft.GetBytesPerPixel());
+        // DO NOT TRY "OPTIMIZE" CODE !!!
+        // Two "while" cycles used for generate next line when previous line
+        // transfer via SPI to display.
       }
-      // Give semaphore after changes
-      line_mutex.Release();
-      // Wait until previous transfer complete
+      // Wait until last transfer complete
       while(tft.IsTransferComplete() == false) taskYIELD();
-      // Write stream to LCD
-      tft.SpiWriteStream((uint8_t*)scr_buf[i%2], width*tft.GetBytesPerPixel());
-      // DO NOT TRY "OPTIMIZE" CODE !!!
-      // Two "while" cycles used for generate next line when previous line
-      // transfer via SPI to display.
-    }
-    // Wait until last transfer complete
-    while(tft.IsTransferComplete() == false) taskYIELD();
-    // Pull up CS
-    tft.StopTransfer();
-    // Give semaphore after draw frame
-    UnlockDisplay();
-    // Calculate FPS if debug info is ON
-    if(DISPLAY_DEBUG_INFO)
-    {
-      // FPS in format XX.X
-      fps_x10 = (1000 * 10) / (HAL_GetTick() - time_ms);
+      // Pull up CS
+      tft.StopTransfer();
+      // Give semaphore after draw frame
+      UnlockDisplay();
+      // Calculate FPS if debug info is ON
+      if(DISPLAY_DEBUG_INFO)
+      {
+        // FPS in format XX.X
+        fps_x10 = (1000 * 10) / (HAL_GetTick() - time_ms);
+      }
     }
   }
 

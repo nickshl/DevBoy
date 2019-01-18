@@ -32,7 +32,9 @@
 
 #include "StHalIic.h"
 #include "BoschBME280.h"
-//#include "Eeprom24.h"
+#include "Mlx90614.h"
+#include "Eeprom24.h"
+#include "Tcs34725.h"
 
 // *****************************************************************************
 // ***   Get Instance   ********************************************************
@@ -234,15 +236,16 @@ Result Application::IicPing(IIic& iic)
   Result result = Result::ERR_I2C_UNKNOWN;
 
   // Strings
-  String str_arr[2+8+1];
+  String str_arr[2+8+2];
   // Buffer for strings
-  static char str_buf[8+1][64] = {0};
+  static char str_buf[8+2][64] = {0};
 
   // Header
   str_arr[8].SetParams("  | x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF", 0U, 0, COLOR_WHITE, String::FONT_6x8);
   str_arr[9].SetParams("---------------------------------------------------", 0U, 8, COLOR_WHITE, String::FONT_6x8);
   // Sensor data
   str_arr[10U].SetParams(str_buf[8U], 0U, 8 * (2+10), COLOR_WHITE, String::FONT_8x12);
+  str_arr[11U].SetParams(str_buf[9U], 0U, 8 * (2+10) + 12, COLOR_WHITE, String::FONT_8x12);
   // Show strings
   for(uint32_t i = 0U; i < NumberOf(str_arr); i++)
   {
@@ -255,18 +258,21 @@ Result Application::IicPing(IIic& iic)
     str_arr[i].Show(10000);
   }
 
-  // TODO: test code below works, but by some reason break
-  // BME280 communication. Use Logic Analyzer to figureout
-  // what happens.
+//  // EEPROM test code
 //  Eeprom24 eeprom(iic);
-//  eeprom.Init();
+//  result = eeprom.Init();
 //  uint8_t buf_out[] = "Test!!!";
-//  result = eeprom.Write(0U, buf_out, sizeof(buf_out));
+//  result |= eeprom.Write(0U, buf_out, sizeof(buf_out));
 //  uint8_t buf_in[16] = {0};
 //  result |= eeprom.Read(0U, buf_in, sizeof(buf_in));
+//  RtosTick::DelayMs(1U);
 
   // Sensor object
   BoschBME280 bmp280(iic);
+  Mlx90614 mlx90614(iic);
+  Tcs34725 tcs34725(iic);
+  // Set error by default for initialize sensor first time
+  result = Result::ERR_I2C_UNKNOWN;
 
   // Loop until user press "Left"
   while(input_drv.GetButtonState(InputDrv::EXT_LEFT, InputDrv::BTN_LEFT) == false)
@@ -296,20 +302,97 @@ Result Application::IicPing(IIic& iic)
       }
     }
 
+    // Wait 50 ms - delay for Logic Analyzer
+    RtosTick::DelayMs(50U);
+
+    // *************************************************************************
+    // ***   BME280   **********************************************************
+    // *************************************************************************
+
+//    // Reinitialize sensor
+//    if(result.IsBad())
+//    {
+//      result = bmp280.Initialize();
+//      result |= bmp280.SetSampling(BoschBME280::MODE_FORCED);
+//    }
+//    // Take measurement
+//    result |= bmp280.TakeMeasurement();
+//    // Get values
+//    int32_t temp = bmp280.GetTemperature_x100();
+//    int32_t press = bmp280.GetPressure_x256() / 256;
+//    int32_t humid = (bmp280.GetHumidity_x1024() * 100) / 1024;
+//    // Generate string
+//    sprintf(str_buf[8U], "T=%ld.%02ldC P=%ldPa H=%ld.%02ld%% %s", temp/100, abs(temp%100), press, humid/100, abs(humid%100), result.IsGood() ? "" : "ERROR"); // Received an ACK at that address
+
+    // *************************************************************************
+    // ***   MLX90614   ********************************************************
+    // *************************************************************************
+
+//    // Reinitialize sensor
+//    if(result.IsBad())
+//    {
+//      result = mlx90614.Initialize();
+//    }
+//    int32_t temp_a = 0;
+//    int32_t temp_o1 = 0;
+//    int32_t temp_o2 = 0;
+//    result =  mlx90614.GetAmbientTemperature_x100(temp_a);
+//    result |= mlx90614.GetObjectTemperature_x100(temp_o1);
+//    result |= mlx90614.GetObjectTemperature_x100(temp_o2);
+//    sprintf(str_buf[8U], "TA=%ld.%02ldC, TO1=%ld.%02ldC, TO2=%ld.%02ldC",
+//            temp_a/100, abs(temp_a%100),
+//            temp_o1/100, abs(temp_o1%100),
+//            temp_o2/100, abs(temp_o2%100));
+
+    // *************************************************************************
+    // ***   TCS34725   ********************************************************
+    // *************************************************************************
+
     // Reinitialize sensor
     if(result.IsBad())
     {
-      result = bmp280.Initialize();
-      result |= bmp280.SetSampling(BoschBME280::MODE_FORCED);
+      result = tcs34725.Initialize();
     }
-    // Take measurement
-    result |= bmp280.TakeMeasurement();
-    // Get values
-    int32_t temp = bmp280.GetTemperature_x100();
-    int32_t press = bmp280.GetPressure_x256() / 256;
-    int32_t humid = (bmp280.GetHumidity_x1024() * 100) / 1024;
-    // Generate string
-    sprintf(str_buf[8U], "T=%ld.%02ldC P=%ldPa H=%ld.%02ld%% %s", temp/100, abs(temp%100), press, humid/100, abs(humid%100), result.IsGood() ? "" : "ERROR"); // Received an ACK at that address
+
+    if(result.IsGood())
+    {
+      bool is_ready = false;
+      // Check data ready
+      result = tcs34725.IsDataReady(is_ready);
+      // If ready
+      if(result.IsGood() && is_ready)
+      {
+        uint16_t r, g, b, c;
+        result = tcs34725.GetRawData(r, g, b, c);
+        if(result.IsGood())
+        {
+          uint16_t lux;
+          uint16_t ct;
+          tcs34725.GetLux(lux);
+          tcs34725.GetColorTemperature(ct);
+          sprintf(str_buf[8U], "R=%5u, G=%5u, B=%5u, C=%5u", r, g, b, c);
+          sprintf(str_buf[9U], "L=%5u, CT=%5u", lux, ct);
+          // Check for low gain
+          if((uint32_t)c * tcs34725.GetGainValue() < 0xFFFFU)
+          {
+            result = tcs34725.IncGain();
+          }
+          // Check for max value
+          if(c == 0xFFFFU)
+          {
+            result = tcs34725.DecGain();
+          }
+        }
+        else
+        {
+          sprintf(str_buf[8U], "ERROR");
+        }
+      }
+    }
+
+    // *************************************************************************
+    // ***   IicPing   *********************************************************
+    // *************************************************************************
 
     // Update display
     display_drv.UpdateDisplay();
