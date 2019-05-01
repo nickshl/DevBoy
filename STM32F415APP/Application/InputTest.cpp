@@ -126,7 +126,7 @@ Result InputTest::Loop()
 		RtosTick::DelayTicks(50U);
 
     // Exit by touch
-    if(display_drv.IsTouch() == true)
+    if(display_drv.IsTouched() == true)
     {
    	  break;
     }
