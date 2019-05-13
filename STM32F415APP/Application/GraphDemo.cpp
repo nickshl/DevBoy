@@ -50,15 +50,15 @@ Result GraphDemo::Loop()
   Line line2(46, 34, 310, 126, COLOR_CYAN);
   line2.Show(30);
 
-  String str1("Hello World!", 0, 10, COLOR_MAGENTA, String::FONT_4x6);
+  String str1("Hello World!", 0, 10, COLOR_MAGENTA, Font_4x6::GetInstance());
   str1.Show(70);
-  String str2("Hello World!", 0, 20, COLOR_CYAN, String::FONT_6x8);
+  String str2("Hello World!", 0, 20, COLOR_CYAN, Font_6x8::GetInstance());
   str2.Show(80);
-  String str3("Hello World!", 0, 30, COLOR_YELLOW, String::FONT_8x8);
+  String str3("Hello World!", 0, 30, COLOR_YELLOW, Font_8x8::GetInstance());
   str3.Show(90);
-  String str4("Hello World!", 0, 50, COLOR_GREEN,COLOR_MAGENTA, String::FONT_8x12);
+  String str4("Hello World!", 0, 50, COLOR_GREEN,COLOR_MAGENTA, Font_6x8::GetInstance());
   str4.Show(100);
-  String str5("Hello World!", 0, 70, COLOR_RED, String::FONT_12x16);
+  String str5("Hello World!", 0, 70, COLOR_RED, Font_10x18::GetInstance());
   str5.Show(110);
 
   Box box1(0, 0, 100, 10, COLOR_RED, true);

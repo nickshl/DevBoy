@@ -63,8 +63,8 @@ Result Pong::Loop()
     srand(RtosTick::GetTickCount());
 
     char scr_str[32] = {" 0 : 0 "};
-    String score_str(scr_str, (display_drv.GetScreenW() - strlen(scr_str)*String::GetFontW(String::FONT_12x16))/2,
-                     16, COLOR_WHITE, String::FONT_12x16);
+    String score_str(scr_str, (display_drv.GetScreenW() - strlen(scr_str) * Font_12x16::GetInstance().GetCharW())/2,
+                     16, COLOR_WHITE, Font_12x16::GetInstance());
     score_str.Show(32768);
 
     // Init ticks variable

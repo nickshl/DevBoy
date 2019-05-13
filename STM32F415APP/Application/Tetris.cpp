@@ -126,7 +126,7 @@ Result Tetris::Loop()
   shape.Show(2);
   next_shape.Show(3);
   char scr_str[32] = {" "};
-  String score_str(scr_str,display_drv.GetScreenW()/2, 16, COLOR_WHITE, String::FONT_8x12);
+  String score_str(scr_str,display_drv.GetScreenW()/2, 16, COLOR_WHITE, Font_8x12::GetInstance());
   score_str.Show(3);
 
   // Init ticks variable
@@ -157,7 +157,7 @@ Result Tetris::Loop()
     if (bucket.CheckShapeCollisionIntoBucket(shape))
     {
       char str[16] = {"GAME OVER"};
-      String touch_str(str,(display_drv.GetScreenW() - strlen(str)*12)/2,(display_drv.GetScreenH() - 16) / 2, COLOR_WHITE, String::FONT_12x16);
+      String touch_str(str,(display_drv.GetScreenW() - strlen(str)*12)/2,(display_drv.GetScreenH() - 16) / 2, COLOR_WHITE, Font_12x16::GetInstance());
       touch_str.Show(10);
       // Update Display
       display_drv.UpdateDisplay();

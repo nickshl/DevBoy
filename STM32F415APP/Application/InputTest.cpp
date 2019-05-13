@@ -45,19 +45,19 @@ char* InputTest::GetMenuStr(void* ptr, char * buf, uint32_t n, uint32_t add_para
 Result InputTest::Loop()
 {
   char str_left[32] = {"\0"};
-  String left_str(str_left, 30-2, 20 - 14, COLOR_MAGENTA, String::FONT_8x12);
+  String left_str(str_left, 30-2, 20 - 14, COLOR_MAGENTA, Font_8x12::GetInstance());
   char str_right[32] = {"\0"};
-  String right_str(str_right, 190-2, 20 - 14, COLOR_MAGENTA, String::FONT_8x12);
+  String right_str(str_right, 190-2, 20 - 14, COLOR_MAGENTA, Font_8x12::GetInstance());
 
   Box box_left(30-2, 20, 100+4, 100+4, COLOR_YELLOW);
   Circle circle_left(30-1, 20-1, 3, COLOR_RED, true);
   char str_left_data[128] = {"\0"};
-  String left_str_data(str_left_data, 0, 200, COLOR_MAGENTA, String::FONT_6x8);
+  String left_str_data(str_left_data, 0, 200, COLOR_MAGENTA, Font_6x8::GetInstance());
 
   Box box_right(190-2, 20, 100+4, 100+4, COLOR_YELLOW);
   Circle circle_right(190-1, 20-1, 3, COLOR_RED, true);
   char str_right_data[128] = {"\0"};
-  String right_str_data(str_right_data, 0, 212, COLOR_MAGENTA, String::FONT_6x8);
+  String right_str_data(str_right_data, 0, 212, COLOR_MAGENTA, Font_6x8::GetInstance());
 
   if(input_drv.GetDeviceType(InputDrv::EXT_LEFT) == InputDrv::EXT_DEV_JOY)
   {

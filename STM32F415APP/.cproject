@@ -51,6 +51,7 @@
 									<listOptionValue builtIn="false" value="../DevCore/Drivers"/>
 									<listOptionValue builtIn="false" value="../DevCore/Libraries"/>
 									<listOptionValue builtIn="false" value="../DevCore/Display"/>
+									<listOptionValue builtIn="false" value="../DevCore/Display/Fonts"/>
 									<listOptionValue builtIn="false" value="../DevCore/Tasks"/>
 									<listOptionValue builtIn="false" value="../DevCore/UiEngine"/>
 									<listOptionValue builtIn="false" value="../Application"/>
@@ -89,6 +90,7 @@
 									<listOptionValue builtIn="false" value="../DevCore/Drivers"/>
 									<listOptionValue builtIn="false" value="../DevCore/Libraries"/>
 									<listOptionValue builtIn="false" value="../DevCore/Display"/>
+									<listOptionValue builtIn="false" value="../DevCore/Display/Fonts"/>
 									<listOptionValue builtIn="false" value="../DevCore/Tasks"/>
 									<listOptionValue builtIn="false" value="../DevCore/UiEngine"/>
 									<listOptionValue builtIn="false" value="../Application"/>

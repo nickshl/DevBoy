@@ -241,11 +241,11 @@ Result Application::IicPing(IIic& iic)
   static char str_buf[8+2][64] = {0};
 
   // Header
-  str_arr[8].SetParams("  | x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF", 0U, 0, COLOR_WHITE, String::FONT_6x8);
-  str_arr[9].SetParams("---------------------------------------------------", 0U, 8, COLOR_WHITE, String::FONT_6x8);
+  str_arr[8].SetParams("  | x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xF", 0U, 0, COLOR_WHITE, Font_6x8::GetInstance());
+  str_arr[9].SetParams("---------------------------------------------------", 0U, 8, COLOR_WHITE, Font_6x8::GetInstance());
   // Sensor data
-  str_arr[10U].SetParams(str_buf[8U], 0U, 8 * (2+10), COLOR_WHITE, String::FONT_8x12);
-  str_arr[11U].SetParams(str_buf[9U], 0U, 8 * (2+10) + 12, COLOR_WHITE, String::FONT_8x12);
+  str_arr[10U].SetParams(str_buf[8U], 0U, 8 * (2+10), COLOR_WHITE, Font_8x12::GetInstance());
+  str_arr[11U].SetParams(str_buf[9U], 0U, 8 * (2+10) + 12, COLOR_WHITE, Font_8x12::GetInstance());
   // Show strings
   for(uint32_t i = 0U; i < NumberOf(str_arr); i++)
   {
@@ -253,7 +253,7 @@ Result Application::IicPing(IIic& iic)
     if(i < 8U)
     {
       // Set result string
-      str_arr[i].SetParams(str_buf[i], 0U, 8 * (2+i), COLOR_WHITE, String::FONT_6x8);
+      str_arr[i].SetParams(str_buf[i], 0U, 8 * (2+i), COLOR_WHITE, Font_6x8::GetInstance());
     }
     str_arr[i].Show(10000);
   }
