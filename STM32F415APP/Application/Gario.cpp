@@ -1026,94 +1026,34 @@ Result Gario::Loop()
   // Process level data
   for(uint32_t i = 0; i < sizeof(level_data); i++)
   {
-    switch(level_data[i])
+    if (levell_data[i] == ' ')
     {
-      case 'b':
-        level_data[i] = 1;
-        break;
-      case 'c':
-        level_data[i] = 2;
-        break;
-      case 'd':
-        level_data[i] = 3;
-        break;
-      case 'e':
-        level_data[i] = 4;
-        break;
-      case 'f':
-        level_data[i] = 5;
-        break;
-      case 'g':
-        level_data[i] = 6;
-        break;
-      case 'h':
-        level_data[i] = 7;
-        break;
-      case 'i':
-        level_data[i] = 8;
-        break;
-      
-      // Decoration
-      case 'A':
-        level_data[i] = 10;
-        break;
-      case 'B':
-        level_data[i] = 11;
-        break;
-      case 'C':
-        level_data[i] = 12;
-        break;
-      case 'D':
-        level_data[i] = 13;
-        break;
-      case 'E':
-        level_data[i] = 14;
-        break;
-      case 'F':
-        level_data[i] = 15;
-        break;
-      case 'G':
-        level_data[i] = 16;
-        break;
-      case 'H':
-        level_data[i] = 17;
-        break;
-      case 'I':
-        level_data[i] = 18;
-        break;
-      case 'K':
-        level_data[i] = 19;
-        break;
-      case 'L':
-        level_data[i] = 20;
-        break;
-      case 'M':
-        level_data[i] = 21;
-        break;
-      case 'N':
-        level_data[i] = 22;
-        break;
-      case 'O':
-        level_data[i] = 23;
-        break;
-      case 'P':
-        level_data[i] = 24;
-        break;
-      case 'Q':
-        level_data[i] = 25;
-        break;
-
-      case 'j':
-        level_data[i] = 26;
-        break;
-      case 'k':
-        level_data[i] = 27;
-        break;
-
-      case ' ':
-        level_data[i] = 0x1F;
-        break;
+      level_data[i] = 0x1F;
+    } 
+    else if (level_data[i] > 'Q') 
+    {
+      if (levell_data[i] > 'i') 
+      {
+        // j,k
+        level_data[i] -= 0x50;
+      }
+      else 
+      {
+        // b,c,d,e,f,g,h,i
+        level_data[i] -= 'a';
+      }
+    } 
+    else if (levell_data[i] < 'K')
+    {
+      // A,B,C,D,E,F,G,H,I
+      level_data[i] -= 0x37;
     }
+    else 
+    {
+      // K,L,M,N,O,P,Q
+      level_data[i] -= 0x38;
+    }
+
   }
 
   // Tile map for world
