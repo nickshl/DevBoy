@@ -35,6 +35,7 @@
 #include "Mlx90614.h"
 #include "Eeprom24.h"
 #include "Tcs34725.h"
+#include "Vl53l0x.h"
 
 // *****************************************************************************
 // ***   Get Instance   ********************************************************
@@ -174,6 +175,7 @@ Result Application::Loop()
           // Create string
           snprintf((char*)str, sizeof(str), "USB test. Timestamp: %lu\r\n", HAL_GetTick());
           // Send to USB
+          extern USBD_HandleTypeDef hUsbDeviceFS;
           if(USBD_CDC_SetTxBuffer(&hUsbDeviceFS, str, strlen((char*)str)) == USBD_OK)
           {
             USBD_CDC_TransmitPacket(&hUsbDeviceFS);
@@ -271,6 +273,7 @@ Result Application::IicPing(IIic& iic)
   BoschBME280 bmp280(iic);
   Mlx90614 mlx90614(iic);
   Tcs34725 tcs34725(iic);
+  Vl53l0x vl53l0x(iic);
   // Set error by default for initialize sensor first time
   result = Result::ERR_I2C_UNKNOWN;
 
@@ -333,61 +336,90 @@ Result Application::IicPing(IIic& iic)
 //    {
 //      result = mlx90614.Initialize();
 //    }
-//    int32_t temp_a = 0;
-//    int32_t temp_o1 = 0;
-//    int32_t temp_o2 = 0;
-//    result =  mlx90614.GetAmbientTemperature_x100(temp_a);
-//    result |= mlx90614.GetObjectTemperature_x100(temp_o1);
-//    result |= mlx90614.GetObjectTemperature_x100(temp_o2);
-//    sprintf(str_buf[8U], "TA=%ld.%02ldC, TO1=%ld.%02ldC, TO2=%ld.%02ldC",
-//            temp_a/100, abs(temp_a%100),
-//            temp_o1/100, abs(temp_o1%100),
-//            temp_o2/100, abs(temp_o2%100));
+//
+//    if(result.IsGood())
+//    {
+//      int32_t temp_a = 0;
+//      int32_t temp_o1 = 0;
+//      int32_t temp_o2 = 0;
+//      result =  mlx90614.GetAmbientTemperature_x100(temp_a);
+//      result |= mlx90614.GetObjectTemperature_x100(temp_o1);
+//      result |= mlx90614.GetObjectTemperature_x100(temp_o2);
+//      sprintf(str_buf[8U], "TA=%ld.%02ldC, TO1=%ld.%02ldC, TO2=%ld.%02ldC",
+//              temp_a/100, abs(temp_a%100),
+//              temp_o1/100, abs(temp_o1%100),
+//              temp_o2/100, abs(temp_o2%100));
+//    }
+//    else
+//    {
+//      sprintf(str_buf[8U], "ERROR");
+//    }
 
     // *************************************************************************
     // ***   TCS34725   ********************************************************
     // *************************************************************************
 
+//    // Reinitialize sensor
+//    if(result.IsBad())
+//    {
+//      result = tcs34725.Initialize();
+//    }
+//
+//    if(result.IsGood())
+//    {
+//      bool is_ready = false;
+//      // Check data ready
+//      result = tcs34725.IsDataReady(is_ready);
+//      // If ready
+//      if(result.IsGood() && is_ready)
+//      {
+//        uint16_t r, g, b, c;
+//        result = tcs34725.GetRawData(r, g, b, c);
+//        if(result.IsGood())
+//        {
+//          uint16_t lux;
+//          uint16_t ct;
+//          tcs34725.GetLux(lux);
+//          tcs34725.GetColorTemperature(ct);
+//          sprintf(str_buf[8U], "R=%5u, G=%5u, B=%5u, C=%5u", r, g, b, c);
+//          sprintf(str_buf[9U], "L=%5u, CT=%5u", lux, ct);
+//          // Check for low gain
+//          if((uint32_t)c * tcs34725.GetGainValue() < 0xFFFFU)
+//          {
+//            result = tcs34725.IncGain();
+//          }
+//          // Check for max value
+//          if(c == 0xFFFFU)
+//          {
+//            result = tcs34725.DecGain();
+//          }
+//        }
+//        else
+//        {
+//          sprintf(str_buf[8U], "ERROR");
+//        }
+//      }
+//    }
+
+    // *************************************************************************
+    // ***   VL53L0X   *********************************************************
+    // *************************************************************************
+
     // Reinitialize sensor
     if(result.IsBad())
     {
-      result = tcs34725.Initialize();
+      result = vl53l0x.Initialize();
     }
 
     if(result.IsGood())
     {
-      bool is_ready = false;
-      // Check data ready
-      result = tcs34725.IsDataReady(is_ready);
-      // If ready
-      if(result.IsGood() && is_ready)
-      {
-        uint16_t r, g, b, c;
-        result = tcs34725.GetRawData(r, g, b, c);
-        if(result.IsGood())
-        {
-          uint16_t lux;
-          uint16_t ct;
-          tcs34725.GetLux(lux);
-          tcs34725.GetColorTemperature(ct);
-          sprintf(str_buf[8U], "R=%5u, G=%5u, B=%5u, C=%5u", r, g, b, c);
-          sprintf(str_buf[9U], "L=%5u, CT=%5u", lux, ct);
-          // Check for low gain
-          if((uint32_t)c * tcs34725.GetGainValue() < 0xFFFFU)
-          {
-            result = tcs34725.IncGain();
-          }
-          // Check for max value
-          if(c == 0xFFFFU)
-          {
-            result = tcs34725.DecGain();
-          }
-        }
-        else
-        {
-          sprintf(str_buf[8U], "ERROR");
-        }
-      }
+      uint16_t distance = 0U;
+      result = vl53l0x.GetDistanceMm(distance);
+      sprintf(str_buf[8U], "Distance: %ld.%03ld m(RAW: %u)", (int32_t)(distance/1000), (int32_t)abs(distance%1000), distance);
+    }
+    else
+    {
+      sprintf(str_buf[8U], "ERROR");
     }
 
     // *************************************************************************

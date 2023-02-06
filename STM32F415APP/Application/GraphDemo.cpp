@@ -58,7 +58,7 @@ Result GraphDemo::Loop()
   str3.Show(90);
   String str4("Hello World!", 0, 50, COLOR_GREEN,COLOR_MAGENTA, Font_6x8::GetInstance());
   str4.Show(100);
-  String str5("Hello World!", 0, 70, COLOR_RED, Font_10x18::GetInstance());
+  String str5("Hello World!", 0, 70, COLOR_RED, Font_12x16::GetInstance());
   str5.Show(110);
 
   Box box1(0, 0, 100, 10, COLOR_RED, true);
