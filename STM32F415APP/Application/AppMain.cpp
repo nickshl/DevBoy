@@ -59,7 +59,7 @@ extern "C" void AppMain(void)
   // Init Input Driver Task
   InputDrv::GetInstance().InitTask(nullptr, &hadc2);
   // Init Sound Driver Task
-  SoundDrv::GetInstance().InitTask(&htim4);
+  SoundDrv::GetInstance().InitTask(&htim4, TIM_CHANNEL_2);
 
   // Init Messages Test Task
   ExampleMsgTask::GetInstance().InitTask();

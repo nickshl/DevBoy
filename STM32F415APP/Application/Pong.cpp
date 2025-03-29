@@ -82,7 +82,7 @@ Result Pong::Loop()
     display_drv.UpdateDisplay();
     // Pause until next tick
     RtosTick::DelayUntilMs(last_wake_ticks, 200U);
-        
+
     // Clear Game Over flag before start game
     game_over = false;
 
@@ -181,9 +181,9 @@ Result Pong::Loop()
           // Restore ball in the center
           ball.Move(display_drv.GetScreenW()/2, display_drv.GetScreenH()/2);
           // Change direction
-        	x_dir = -x_dir;
-        	// Clear speed
-        	speed = 0;
+          x_dir = -x_dir;
+          // Clear speed
+          speed = 0;
         }
 
         // Check Game Over
@@ -191,9 +191,11 @@ Result Pong::Loop()
         {
           game_over = true;
         }
-          
+
         // Create score string
         sprintf(scr_str, "%2u : %-2u", left_score, right_score);
+        // To update score
+        score_str.InvalidateObjArea();
         // Unlock Display
         display_drv.UnlockDisplay();
         // Update Display
@@ -217,9 +219,9 @@ bool Pong::MoveBall(Circle &ball, Box &box_left, Box &box_right)
 {
   bool ret = false;
   int32_t dx=0, dy=0;
-  
+
   uint8_t move = speed;
-  
+
   while(move--)
   {
     // Check collision with right box
@@ -248,7 +250,7 @@ bool Pong::MoveBall(Circle &ball, Box &box_left, Box &box_right)
       ret = true;
       break;
     }
-    
+
     // Y move
     if((ball.GetStartY()+dy+y_dir >= 0) && (ball.GetEndY()+dy+y_dir < display_drv.GetScreenH()))
     {
@@ -259,9 +261,9 @@ bool Pong::MoveBall(Circle &ball, Box &box_left, Box &box_right)
       y_dir = -y_dir;
     }
   }
-  
+
   // Move object
   ball.Move(dx, dy, true);
-  
+
   return ret;
 }

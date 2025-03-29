@@ -42,7 +42,7 @@ static const int32_t HEIGHT = 24;
 static const int32_t CUBE_SIZE = 10;
 
 // Colors for shapes
-static const uint16_t colors[8] = {COLOR_BLACK, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_MAGENTA, COLOR_YELLOW, COLOR_CYAN, COLOR_DARKGREY};
+static const color_t colors[8] = {COLOR_BLACK, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_MAGENTA, COLOR_YELLOW, COLOR_CYAN, COLOR_DARKGREY};
 
 // *****************************************************************************
 // ***   Application Class   ***************************************************
@@ -50,7 +50,7 @@ static const uint16_t colors[8] = {COLOR_BLACK, COLOR_RED, COLOR_GREEN, COLOR_BL
 class Tetris : public AppTask
 {
   public:
-	// *************************************************************************
+    // *************************************************************************
     // ***   Get Instance   ****************************************************
     // *************************************************************************
     static Tetris& GetInstance(void);
@@ -65,6 +65,8 @@ class Tetris : public AppTask
     bool game_over = false;
     // Round flag
     bool round = true;
+    // drop flag
+    bool drop = false;
 
     // Last left encoder value
     int32_t last_enc1_val = 0;
@@ -85,7 +87,7 @@ class Tetris : public AppTask
     InputDrv& input_drv = InputDrv::GetInstance();
     // Sound driver instance
     SoundDrv& sound_drv = SoundDrv::GetInstance();
-    
+
     // *************************************************************************
     // ** Private constructor. Only GetInstance() allow to access this class. **
     // *************************************************************************
@@ -110,6 +112,11 @@ class TetrisShape : public VisObject
     void RotateShape(int8_t dir);
 
     // *************************************************************************
+    // ***   MoveShape   *******************************************************
+    // *************************************************************************
+    void MoveShape(int8_t x, int8_t y, bool is_delta = false);
+
+    // *************************************************************************
     // ***   DrawShapeIntoBuffer   *********************************************
     // *************************************************************************
     void DrawShapeIntoBuffer(uint8_t * buf, int32_t width, int32_t height);
@@ -132,19 +139,17 @@ class TetrisShape : public VisObject
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
-    void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t start_x);
+    virtual void DrawInBufW(color_t* buf, int32_t n, int32_t line, int32_t start_x);
 
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
-    void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t start_y) {};
+    virtual void DrawInBufH(color_t* buf, int32_t n, int32_t row, int32_t start_y) {};
 
-    // Public variables for access from Tetris class
-
-    // Shape X position on screen
-    int8_t shapeTopLeftX = 0;
-    // Shape Y position on screen
-    int8_t shapeTopLeftY= 0;
+    // *************************************************************************
+    // ***   Invalidate Object Area   ******************************************
+    // *************************************************************************
+    virtual void InvalidateObjArea(bool force = false);
 
   private:
     // Current shape
@@ -155,6 +160,11 @@ class TetrisShape : public VisObject
     int8_t shapeRotate = 0;
     // Current rotation index of shape
     int8_t shapeColorIdx = 0;
+
+    // Shape X position on screen
+    int8_t shapeTopLeftX = 0;
+    // Shape Y position on screen
+    int8_t shapeTopLeftY = 0;
 
     // Static array contains all shapes
     static const bool shapesArray[7][4*4];
@@ -201,12 +211,12 @@ class TetrisBucket : public VisObject
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
-    void DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t start_x);
+    virtual void DrawInBufW(color_t* buf, int32_t n, int32_t line, int32_t start_x);
 
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
-    void DrawInBufH(uint16_t* buf, int32_t n, int32_t row, int32_t start_y) {};
+    virtual void DrawInBufH(color_t* buf, int32_t n, int32_t row, int32_t start_y) {};
 
 private:
   // Bucket buffer

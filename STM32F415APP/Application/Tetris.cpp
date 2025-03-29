@@ -24,7 +24,7 @@
 // ***   Constants   ***********************************************************
 // *****************************************************************************
 
-const uint16_t music_data_table[]={
+const uint16_t music_data_table[]= {
 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1, 0x1881, 0x0A51, 0x0F71, 0x14A1,
 0x1881, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061, 0x14A1, 0x1B81, 0x0A51, 0x1061,
 0x14A1, 0x1B81, 0x0A51, 0x0DC1, 0x1261, 0x1721, 0x0A51, 0x0DC1, 0x1261, 0x1721, 0x0A51, 0x0DC1, 0x1261, 0x1721, 0x0A51,
@@ -115,6 +115,9 @@ Result Tetris::Loop()
   (void) input_drv.GetEncoderButtonState(InputDrv::EXT_RIGHT, InputDrv::ENC_BTN_ENT, enc2_btn_val);
   (void) input_drv.GetEncoderButtonState(InputDrv::EXT_RIGHT, InputDrv::ENC_BTN_BACK, enc2_btn_back_val);
 
+  // String to show pause
+  String pause_str("PAUSE", (display_drv.GetScreenW() - strlen("PAUSE")*12)/2,(display_drv.GetScreenH() - 16) / 2, COLOR_WHITE, Font_12x16::GetInstance());
+
   // Play Sound (Demo)
   sound_drv.PlaySound(music_data_table, NumberOf(music_data_table), 120U, true);
 
@@ -126,7 +129,7 @@ Result Tetris::Loop()
   shape.Show(2);
   next_shape.Show(3);
   char scr_str[32] = {" "};
-  String score_str(scr_str,display_drv.GetScreenW()/2, 16, COLOR_WHITE, Font_8x12::GetInstance());
+  String score_str(scr_str, (WIDTH + 1u) * CUBE_SIZE, 16, COLOR_WHITE, Font_8x12::GetInstance());
   score_str.Show(3);
 
   // Init ticks variable
@@ -148,17 +151,17 @@ Result Tetris::Loop()
     // Loops can't be less than 1
     if(loops < 1) loops = 1;
 
-    // Create new shape
+    // Copy next shape to current one
     shape.PopulateShapeArray(next_shape);
+    // Create next shape
     next_shape.PopulateShapeArray(rand()%7, 1+(rand()%5));
-    next_shape.shapeTopLeftX = 15;
-    next_shape.shapeTopLeftY = 5;
+    next_shape.MoveShape(WIDTH + 2u, 5);
 
-    if (bucket.CheckShapeCollisionIntoBucket(shape))
+    if(bucket.CheckShapeCollisionIntoBucket(shape))
     {
       char str[16] = {"GAME OVER"};
-      String touch_str(str,(display_drv.GetScreenW() - strlen(str)*12)/2,(display_drv.GetScreenH() - 16) / 2, COLOR_WHITE, Font_12x16::GetInstance());
-      touch_str.Show(10);
+      String gameover_str(str,(display_drv.GetScreenW() - strlen(str)*12)/2,(display_drv.GetScreenH() - 16) / 2, COLOR_WHITE, Font_12x16::GetInstance());
+      gameover_str.Show(10);
       // Update Display
       display_drv.UpdateDisplay();
       // Pause until next tick
@@ -168,7 +171,7 @@ Result Tetris::Loop()
     }
 
     round = true;
-    while (round == true)
+    while(round == true)
     {
       // Lock Display
       display_drv.LockDisplay();
@@ -185,12 +188,12 @@ Result Tetris::Loop()
         for(int32_t i = en_1_cnt; i != 0; i -= dir)
         {
           // Move shape
-          shape.shapeTopLeftX += dir;
+          shape.MoveShape(dir, 0, true);
           // If shape have collision
           if (bucket.CheckShapeCollisionIntoBucket(shape))
           {
             // Return shape on previous position
-            shape.shapeTopLeftX -= dir;
+            shape.MoveShape(-dir, 0, true);
             // Exit from loop
             break;
           }
@@ -218,7 +221,7 @@ Result Tetris::Loop()
 
       // If any encoder button pressed - pull shape down 
       if(   (input_drv.GetEncoderButtonState(InputDrv::EXT_LEFT,  InputDrv::ENC_BTN_ENT, enc1_btn_val) && enc1_btn_val)
-	       || (input_drv.GetEncoderButtonState(InputDrv::EXT_RIGHT, InputDrv::ENC_BTN_ENT, enc2_btn_val) && enc2_btn_val) )
+         || (input_drv.GetEncoderButtonState(InputDrv::EXT_RIGHT, InputDrv::ENC_BTN_ENT, enc2_btn_val) && enc2_btn_val) )
       {
         if(pause == false)
         {
@@ -231,7 +234,11 @@ Result Tetris::Loop()
       if(   (input_drv.GetEncoderButtonState(InputDrv::EXT_LEFT,  InputDrv::ENC_BTN_BACK, enc1_btn_back_val) && enc1_btn_back_val)
          || (input_drv.GetEncoderButtonState(InputDrv::EXT_RIGHT, InputDrv::ENC_BTN_BACK, enc2_btn_back_val) && enc2_btn_back_val) )
       {
+        // Invert pause flag
         pause = !pause;
+        // Show or hide "PAUSE" string
+        if(pause) pause_str.Show(10);
+        else      pause_str.Hide();
       }
 
       if(pause == false)
@@ -239,12 +246,12 @@ Result Tetris::Loop()
         if(loops == 0)
         {
           // Fall down
-          shape.shapeTopLeftY += 1;
+          shape.MoveShape(0, 1, true);
           // If shape have collision
           if (bucket.CheckShapeCollisionIntoBucket(shape))
           {
             // Return shape on up position
-            shape.shapeTopLeftY -= 1;
+            shape.MoveShape(0, -1, true);
             // Store shape in bucket - now it is static
             bucket.PutShapeIntoBucket(shape);
             // This round finished
@@ -261,7 +268,7 @@ Result Tetris::Loop()
         }
       }
       // Create score string
-      sprintf(scr_str, "Score: %lu", bucket.GetScore());
+      score_str.SetString(scr_str, NumberOf(scr_str), "Score: %lu", bucket.GetScore());
       // Unlock Display
       display_drv.UnlockDisplay();
       // Update Display
@@ -301,6 +308,33 @@ void TetrisShape::RotateShape(int8_t dir)
   {
     shapeArray[shapeRtArray[shapeRotate][n]] = shapesArray[shapeNum][n];
   }
+
+  // Invalidate area, during rotation position isn't changed
+  InvalidateObjArea();
+}
+
+// *****************************************************************************
+// ***   MoveShape   ***********************************************************
+// *****************************************************************************
+void TetrisShape::MoveShape(int8_t x, int8_t y, bool is_delta)
+{
+  // Invalidate area before move to redraw area object move from
+  InvalidateObjArea();
+  // Make changes
+  if(is_delta == true)
+  {
+    // Move shape in delta coordinates
+    shapeTopLeftX += x;
+    shapeTopLeftY += y;
+  }
+  else
+  {
+    // Move shape in absolute coordinates
+    shapeTopLeftX = x;
+    shapeTopLeftY = y;
+  }
+  // Invalidate area after move to redraw area object move to
+  InvalidateObjArea();
 }
 
 // *****************************************************************************
@@ -352,7 +386,7 @@ void TetrisShape::PopulateShapeArray(uint8_t shapeType, uint8_t color_idx)
   shapeRotate = 0;
   shapeColorIdx = color_idx;
 
-  for (int32_t n = 0; n < 4*4; n++)
+  for(int32_t n = 0; n < 4*4; n++)
   {
     shapeArray[n] = shapesArray[shapeNum][n];
   }
@@ -369,7 +403,7 @@ void TetrisShape::PopulateShapeArray(TetrisShape& shape)
   shapeRotate = shape.shapeRotate;
   shapeColorIdx = shape.shapeColorIdx;
 
-  for (int32_t n = 0; n < 4*4; n++)
+  for(int32_t n = 0; n < 4*4; n++)
   {
     shapeArray[n] = shape.shapeArray[n];
   }
@@ -378,19 +412,19 @@ void TetrisShape::PopulateShapeArray(TetrisShape& shape)
 // ***************************************************************************
 // ***   Put line in buffer   ************************************************
 // ***************************************************************************
-void TetrisShape::DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t start_x)
+void TetrisShape::DrawInBufW(color_t* buf, int32_t n, int32_t line, int32_t start_x)
 {
   // Draw only if needed
   if((line >= shapeTopLeftY*CUBE_SIZE) && (line < (shapeTopLeftY+4)*CUBE_SIZE))
   {
     int32_t shape_line = line - shapeTopLeftY*CUBE_SIZE;
-    int32_t start = 0;
+    int32_t start = -1;
     int32_t end = 0;
-    for(int32_t i=0; i < 4; i++)
+    for(int32_t i = 0; i < 4; i++)
     {
       if(shapeArray[(shape_line/CUBE_SIZE)*4 + i] == true)
       {
-        if(start == 0) start = ((shapeTopLeftX+i)*CUBE_SIZE) - start_x;
+        if(start == -1) start = ((shapeTopLeftX+i)*CUBE_SIZE) - start_x;
         end = ((shapeTopLeftX+i)*CUBE_SIZE) + CUBE_SIZE - 1 - start_x;
       }
     }
@@ -404,6 +438,20 @@ void TetrisShape::DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t sta
       for(int32_t i = start; i <= end; i++) buf[i] = colors[shapeColorIdx];
     }
   }
+}
+
+// *****************************************************************************
+// ***   Invalidate Display Area   *********************************************
+// *****************************************************************************
+void TetrisShape::InvalidateObjArea(bool force)
+{
+  // Calculate position in pixels
+  x_start = shapeTopLeftX * CUBE_SIZE;
+  x_end = (shapeTopLeftX + 4) * CUBE_SIZE;
+  y_start = shapeTopLeftY * CUBE_SIZE;
+  y_end = (shapeTopLeftY + 4) * CUBE_SIZE;
+  // And invalidate object area
+  VisObject::InvalidateObjArea();
 }
 
 // *****************************************************************************
@@ -456,7 +504,10 @@ void TetrisBucket::RemoveFullLines()
   }
   if (cnt > 0)
   {
+    // Update score
     score += 100 + 200 * (cnt - 1);
+    // Invalidate bucket to update
+    InvalidateObjArea();
   }
 }
 
@@ -480,12 +531,17 @@ void TetrisBucket::InitBucket()
   {
     bucket[y*WIDTH + x] = 0x07;
   }
+  // Calculate position in pixels for InvalidateObjArea()
+  x_start = 0;
+  x_end = WIDTH * CUBE_SIZE;
+  y_start = 0;
+  y_end = HEIGHT * CUBE_SIZE;
 }
 
 // *****************************************************************************
 // ***   Put line in buffer   **************************************************
 // *****************************************************************************
-void TetrisBucket::DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t start_x)
+void TetrisBucket::DrawInBufW(color_t* buf, int32_t n, int32_t line, int32_t start_x)
 {
   // Draw only if needed
   if(line < HEIGHT*CUBE_SIZE)
@@ -506,6 +562,11 @@ void TetrisBucket::DrawInBufW(uint16_t* buf, int32_t n, int32_t line, int32_t st
         }
       }
     }
+  }
+  else
+  {
+    volatile int32_t bucket_line = line/CUBE_SIZE;
+    bucket_line--;
   }
 }
 

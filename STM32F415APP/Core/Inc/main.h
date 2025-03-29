@@ -87,8 +87,8 @@ void Error_Handler(void);
 #define SPI_MOSI_GPIO_Port GPIOB
 #define T_IRQ_Pin GPIO_PIN_6
 #define T_IRQ_GPIO_Port GPIOB
-#define SPEAKER_Pin GPIO_PIN_7
-#define SPEAKER_GPIO_Port GPIOB
+#define BUZZER_Pin GPIO_PIN_7
+#define BUZZER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

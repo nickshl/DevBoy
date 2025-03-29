@@ -94,12 +94,12 @@ class SoundControlBox : public Image
     // *************************************************************************
     // ***   Put line in buffer   **********************************************
     // *************************************************************************
-    virtual void Action(VisObject::ActionType action, int32_t tx, int32_t ty);
+    virtual void Action(ActionType action, int32_t tx, int32_t ty, int32_t tpx, int32_t tpy);
 
   private:
     // Mute flag
     bool mute = false;
-    
+
     // Sound driver instance
     SoundDrv& sound_drv = SoundDrv::GetInstance();
 };

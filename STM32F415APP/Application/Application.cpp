@@ -63,7 +63,7 @@ Result Application::Loop()
 {
   Result result;
 
-  StHalIic iic(BME280_HI2C);
+  StHalIic iic(hi2c1);
 
   // Sound control on the touchscreen
   SoundControlBox snd_box(0, 0);
@@ -122,7 +122,7 @@ Result Application::Loop()
 
         // InputTest Application
         case 5:
-        	InputTest::GetInstance().Loop();
+          InputTest::GetInstance().Loop();
           break;
 
         // SD write test
@@ -218,7 +218,7 @@ Result Application::Loop()
         case 10:
           IicPing(iic);
           break;
-         
+
         default:
           break;
       }
@@ -545,8 +545,8 @@ const uint8_t mute_on_img[] = {
 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xD7, 0xD7};
 
 const ImageDesc mute_img[] = {
-{28, 28, 8, {.img8 = mute_off_img}, PALETTE_676, PALETTE_676[0xD7]},
-{28, 28, 8, {.img8 = mute_on_img},  PALETTE_676, PALETTE_676[0xD7]}};
+{28, 28, 8, {.img = mute_off_img}, PALETTE_676, PALETTE_676[0xD7]},
+{28, 28, 8, {.img = mute_on_img},  PALETTE_676, PALETTE_676[0xD7]}};
 
 // *****************************************************************************
 // ***   Constructor   *********************************************************
@@ -569,7 +569,7 @@ SoundControlBox::SoundControlBox(int32_t x, int32_t y, bool mute_flag) :
 // *****************************************************************************
 // ***   Action   **************************************************************
 // *****************************************************************************
-void SoundControlBox::Action(VisObject::ActionType action, int32_t tx, int32_t ty)
+void SoundControlBox::Action(ActionType action, int32_t tx, int32_t ty, int32_t tpx, int32_t tpy)
 {
   // Switch for process action
   switch(action)
@@ -590,7 +590,7 @@ void SoundControlBox::Action(VisObject::ActionType action, int32_t tx, int32_t t
       // Mute control
       sound_drv.Mute(mute);
       break;
-  
+
     // Untouch action 
     case VisObject::ACT_UNTOUCH:
       break;

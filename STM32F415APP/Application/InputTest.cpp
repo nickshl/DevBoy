@@ -64,8 +64,8 @@ Result InputTest::Loop()
     sprintf(str_left, "JOYSTICK");
     left_str.Show(30);
 
-  	box_left.Show(10);
-  	circle_left.Show(20);
+    box_left.Show(10);
+    circle_left.Show(20);
     left_str_data.Show(30);
   }
   if(input_drv.GetDeviceType(InputDrv::EXT_LEFT) == InputDrv::EXT_DEV_ENC)
@@ -106,29 +106,29 @@ Result InputTest::Loop()
   {
     if(input_drv.GetDeviceType(InputDrv::EXT_LEFT) == InputDrv::EXT_DEV_JOY)
     {
-   	  // Get values for left
+      // Get values for left
       input_drv.GetJoystickState(InputDrv::EXT_LEFT, x, y);
- 		  circle_left.Move(30-2 + (x * 100) / 4095, 20-2 + (y * 100) / 4095);
- 		  sprintf(str_left_data, "LEFT:  X=%4li, Y=%4li", x, y);
+      circle_left.Move(30-2 + (x * 100) / 4095, 20-2 + (y * 100) / 4095);
+      sprintf(str_left_data, "LEFT:  X=%4li, Y=%4li", x, y);
     }
 
     if(input_drv.GetDeviceType(InputDrv::EXT_RIGHT) == InputDrv::EXT_DEV_JOY)
     {
- 		  // Get values for right
- 		  input_drv.GetJoystickState(InputDrv::EXT_RIGHT, x, y);
- 		  circle_right.Move(190-2 + (x * 100) / 4095, 20-2 + (y * 100) / 4095);
- 		  sprintf(str_right_data, "RIGHT: X=%4li, Y=%4li", x, y);
+       // Get values for right
+       input_drv.GetJoystickState(InputDrv::EXT_RIGHT, x, y);
+       circle_right.Move(190-2 + (x * 100) / 4095, 20-2 + (y * 100) / 4095);
+       sprintf(str_right_data, "RIGHT: X=%4li, Y=%4li", x, y);
     }
 
-		// Update Display
-		display_drv.UpdateDisplay();
+    // Update Display
+    display_drv.UpdateDisplay();
     // Pause
-		RtosTick::DelayTicks(50U);
+    RtosTick::DelayTicks(50U);
 
     // Exit by touch
     if(display_drv.IsTouched() == true)
     {
-   	  break;
+       break;
     }
   }
 

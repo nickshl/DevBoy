@@ -216,7 +216,7 @@ uint8_t level_data[] =
   0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,
   0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,
   0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64,0x64};
-                   
+
 uint16_t levelH = 14;
 uint16_t levelW = 216;
 
@@ -745,35 +745,35 @@ const uint8_t tiles_28_data[] = {
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 const ImageDesc tiles[] = {
-{16, 16, 8, {.img8 = tiles_0_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_1_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_2_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_3_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_4_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_5_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_6_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_7_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_8_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_9_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_10_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_11_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_12_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_13_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_14_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_15_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_16_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_17_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_18_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_19_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_20_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_21_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_22_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_23_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_24_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_25_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_26_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_27_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = tiles_28_data}, PALETTE_884, COLOR_MAGENTA}};
+{16, 16, 8, {.img = tiles_0_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_1_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_2_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_3_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_4_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_5_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_6_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_7_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_8_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_9_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_10_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_11_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_12_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_13_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_14_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_15_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_16_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_17_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_18_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_19_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_20_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_21_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_22_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_23_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_24_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_25_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_26_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_27_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = tiles_28_data}, PALETTE_884, COLOR_MAGENTA}};
 
 const uint8_t gario_0_data[] = {
 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0x05, 0x05, 0x05, 0x05, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 
@@ -902,13 +902,13 @@ const uint8_t gario_6_data[] = {
 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7};
 
 const ImageDesc gario[] = {
-{16, 16, 8, {.img8 = gario_0_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_1_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_2_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_3_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_4_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_5_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = gario_6_data}, PALETTE_884, COLOR_MAGENTA}};
+{16, 16, 8, {.img = gario_0_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_1_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_2_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_3_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_4_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_5_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = gario_6_data}, PALETTE_884, COLOR_MAGENTA}};
 
 const uint8_t mushroom_0_data[] = {
 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0x14, 0x14, 0x14, 0x14, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 0xC7, 
@@ -965,9 +965,9 @@ const uint8_t mushroom_2_data[] = {
 0xC7, 0xC7, 0xC7, 0xC7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC7, 0xC7, 0xC7, 0xC7};
 
 const ImageDesc mushroom[] = {
-{16, 16, 8, {.img8 = mushroom_0_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = mushroom_1_data}, PALETTE_884, COLOR_MAGENTA},
-{16, 16, 8, {.img8 = mushroom_2_data}, PALETTE_884, COLOR_MAGENTA}};
+{16, 16, 8, {.img = mushroom_0_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = mushroom_1_data}, PALETTE_884, COLOR_MAGENTA},
+{16, 16, 8, {.img = mushroom_2_data}, PALETTE_884, COLOR_MAGENTA}};
 
 const uint16_t SuperMarioThemeTable[] = {
 0x2932, 0x2932, 0x0002, 0x2932, 0x0002, 0x20B2, 0x2932, 0x0002, 0x30F2, 0x0002,
@@ -1052,7 +1052,7 @@ Result Gario::Loop()
       case 'i':
         level_data[i] = 8;
         break;
-      
+
       // Decoration
       case 'A':
         level_data[i] = 10;
@@ -1124,7 +1124,7 @@ Result Gario::Loop()
 
   // Gario sprite
   GarioSprite gario_sprite(10, 10, tiledmap);
-  
+
   // Enemy sprite
   EnemySprite enemy_sprite1(300, 10, tiledmap);
   EnemySprite enemy_sprite2(500, 10, tiledmap);
@@ -1133,8 +1133,8 @@ Result Gario::Loop()
   EnemySprite* enemys[] = {&enemy_sprite1, &enemy_sprite2, &enemy_sprite3};
 
   // Play Sound (Demo)
-  sound_drv.PlaySound(SuperMarioThemeTable, NumberOf(SuperMarioThemeTable), 70U, true);
-  
+  sound_drv.PlaySound(SuperMarioThemeTable, NumberOf(SuperMarioThemeTable), 70u, true);
+
   // Movement variables
   int32_t dx = 0;
   int32_t dy = 0;
@@ -1145,6 +1145,7 @@ Result Gario::Loop()
   // Main cycle
   while(alive)
   {
+//    DisplayDrv::GetInstance().InvalidateDisplay();
     // Update Display
     DisplayDrv::GetInstance().UpdateDisplay();
     // Pause until next tick
@@ -1160,10 +1161,10 @@ Result Gario::Loop()
 
     if(input_drv.GetButtonState(InputDrv::EXT_RIGHT, InputDrv::BTN_DOWN))  dy = -1;
     if(input_drv.GetButtonState(InputDrv::EXT_LEFT,  InputDrv::BTN_DOWN))  dy =  1;
-    
+
     // Process main character sprite
     alive = gario_sprite.Process(dx, dy, TICK_MS, time_ms);
-    // Process enemys sprites
+    // Process enemy sprites
     for(uint32_t i = 0; i < NumberOf(enemys); i++)
     {
       enemys[i]->Process(dx, dy, TICK_MS, time_ms);
@@ -1194,7 +1195,7 @@ Result Gario::Loop()
     // Increase tick counter
     time_ms += TICK_MS;
   }
-  
+
   // Stop Sound
   sound_drv.StopSound();
 
@@ -1260,7 +1261,7 @@ bool GarioSprite::Process(int32_t dx, int32_t dy, int32_t tick_ms, int32_t time_
     // Gario die - set stop image
     SetImage(gario[6]);
   }
-  
+
   // ***   Y movement   ********************************************************
   // Set speed
   if( (dy < 0) && (y_speed == 0) ) y_speed = -JUMP_SPEED;
@@ -1388,10 +1389,10 @@ bool GarioSprite::Process(int32_t dx, int32_t dy, int32_t tick_ms, int32_t time_
   {
     tile_map.ScrollView((tile_map.GetPixWidth() - tile_map.GetWidth()) - tile_map.GetMapPosX());
   }
-  
+
   // ***   Gario sprite movement   *********************************************
   Move(x_map_pos - tile_map.GetMapPosX(), y_map_pos - tile_map.GetMapPosY());
-  
+
   return alive;
 }
 
@@ -1452,7 +1453,7 @@ void EnemySprite::Process(int32_t dx, int32_t dy, int32_t tick_ms, int32_t time_
       SetImage(mushroom[2]);
       // Decrease time counter
       time_to_die -= tick_ms;
-      // If time expiared
+      // If time expired
       if(time_to_die < 0)
       {
         // Hide sprite
@@ -1515,7 +1516,7 @@ void EnemySprite::Process(int32_t dx, int32_t dy, int32_t tick_ms, int32_t time_
   {
     if(tile_map.GetMapPosX() + (int32_t)DisplayDrv::GetInstance().GetScreenW() >= x_map_pos)
     {
-    	is_active = true;
+      is_active = true;
     }
   }
 }

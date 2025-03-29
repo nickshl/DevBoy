@@ -31,13 +31,14 @@ Calc& Calc::GetInstance(void)
 
 // *****************************************************************************
 // ***   Test get function   ***************************************************
-void Calc::Callback(void* ptr, void* param_ptr, uint32_t param)
+// *****************************************************************************
+Result Calc::Callback(Calc* calc, void* ptr)
 {
-  Calc* calc = (Calc*)ptr;
-  const char* str = (const char*)param_ptr;
+  UiButton &btn = *((UiButton*)ptr);
+  const char* str = btn.GetString();
 
   // We havn't string pointer only on the Clear button
-  if(str == nullptr)
+  if(&btn == &calc->result)
   {
     calc->a = 0;
     calc->b = 0;
@@ -95,7 +96,10 @@ void Calc::Callback(void* ptr, void* param_ptr, uint32_t param)
       }
     }
   }
-	calc->GenerateStr();
+  calc->GenerateStr();
+
+  // Always run
+  return Result::RESULT_OK;
 }
 
 // *************************************************************************
@@ -104,20 +108,22 @@ void Calc::Callback(void* ptr, void* param_ptr, uint32_t param)
 void Calc::GenerateStr()
 {
   // No operation - show b variable only
-	if(op == 0)
-	{
-		snprintf(str, sizeof(str), "%li", b);
-	}
-	// Present operation, not present b - do not show 0 for b
-	else if(b == 0)
-	{
-		snprintf(str, sizeof(str), "%li %c", a, op);
-	}
-	// Show both arguments and operation
-	else
-	{
-		snprintf(str, sizeof(str), "%li %c %li", a, op, b);
-	}
+  if(op == 0)
+  {
+    snprintf(str, sizeof(str), "%li", b);
+  }
+  // Present operation, not present b - do not show 0 for b
+  else if(b == 0)
+  {
+    snprintf(str, sizeof(str), "%li %c", a, op);
+  }
+  // Show both arguments and operation
+  else
+  {
+    snprintf(str, sizeof(str), "%li %c %li", a, op, b);
+  }
+  // Update result on screen
+  result.InvalidateObjArea();
 }
 
 // *****************************************************************************
@@ -126,47 +132,47 @@ void Calc::GenerateStr()
 Result Calc::Loop()
 {
   // Calculate buttons dimensions based on space
-	int32_t space = 10;
-	int32_t btn_h = (display_drv.GetScreenH()-space*6)/5;
-	int32_t btn_w = (display_drv.GetScreenW()-space*5)/4;
+  int32_t space = 10;
+  int32_t btn_h = (display_drv.GetScreenH() - space*6)/5;
+  int32_t btn_w = (display_drv.GetScreenW() - space*5)/4;
 
-	// Result string and button for clear
-	snprintf(str, sizeof(str), "0                        ");
-	result.SetParams(str, space, space, display_drv.GetScreenW()-space*2, btn_h, true);
-	result.SetCallback(&Callback, this, nullptr, 0);
-	result.Show(1000);
+  // Result string and button for clear
+  snprintf(str, sizeof(str), "0                        ");
+  result.SetParams(str, space, space, display_drv.GetScreenW() - space*2, btn_h, true);
+  result.SetCallback(AppTask::GetCurrent(), reinterpret_cast<CallbackPtr>(&Callback), this);
+  result.Show(1000);
 
-	// Buttons pad layout
-	char btn_str[4*4][2] = {"/", "7", "8", "9",
-	                        "*", "4", "5", "6",
-	                        "-", "1", "2", "3",
-	                        "+", "=", "0", "."};
-	// Create buttons
-	for(uint32_t i=0; i < NumberOf(btn); i++)
-	{
-	  btn[i].SetParams(btn_str[i], space+(btn_w+space)*(i%4), space+(btn_h+space)*(1+i/4),
-	                   btn_w, btn_h, true);
-	  btn[i].SetCallback(&Callback, this, (void*)btn_str[i], i);
-	  btn[i].Show(1000);
-	}
+  // Buttons pad layout
+  char btn_str[4*4][2] = {"/", "7", "8", "9",
+                          "*", "4", "5", "6",
+                          "-", "1", "2", "3",
+                          "+", "=", "0", "."};
+  // Create buttons
+  for(uint32_t i=0; i < NumberOf(btn); i++)
+  {
+    btn[i].SetParams(btn_str[i], space+(btn_w+space)*(i%4), space+(btn_h+space)*(1+i/4),
+                     btn_w, btn_h, true);
+    btn[i].SetCallback(AppTask::GetCurrent(), reinterpret_cast<CallbackPtr>(&Callback), this);
+    btn[i].Show(1000);
+  }
 
-	// Infinite cycle. All calculations done in DispayDrv task,
-	// so there we only check exit.
+  // Infinite cycle. All calculations done in DispayDrv task,
+  // so there we only check exit.
   while(1)
   {
-		// Update Display
-		display_drv.UpdateDisplay();
+    // Update Display
+    display_drv.UpdateDisplay();
     // Pause
-		RtosTick::DelayTicks(50U);
+    RtosTick::DelayTicks(50U);
 
     // Exit by press
     if(input_drv.GetEncoderButtonState(InputDrv::EXT_LEFT, InputDrv::ENC_BTN_ENT) == true)
     {
-   	  break;
+       break;
     }
   }
 
-	// Hide result
+  // Hide result
   result.Hide();
   // Hide buttons
   for(uint32_t i=0; i < NumberOf(btn); i++)
